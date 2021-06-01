@@ -1,0 +1,20 @@
+<details>
+<summary><span><strong>More Info</strong>: place favicon.ico at root</span> <em>Highly recommended</em></summary>
+<h2>Place favicion.ico at site root</h2>
+<h3><strong>tldr</strong>: avoid hassle, place <strong>favicion.ico at site root</strong></h3>
+<p>Regardless of where other favicons, browserconfig and webmanifest are placed, it is <strong>much better</strong> to place favicon.ico at the root of your site.</p>
+<p>The alternative is to direct browsers to your favicon through the old shortcut meta tag. Because of the ancient and weird ways of favicon.ico, this is not good.</p>
+<p>If you include the link to favicon.ico, browsers will obediently download it &#8212; as instructed &#8212; even when they have <strong>no need for it</strong> and <strong>no intention of using it</strong>.</p>
+<p>In contrast, if it is just sitting in the site root &#8212; where by the arcane rules of favicon.ico, browsers expect it to be &#8212; they will happily ignore it unless it is needed.</p>
+<p>This is handy, especially when chromium-based browsers like Chrome, Edge, Brave, Opera and many more, consistently request a no-cache version of favicons (cache-control: no-cache).</p>
+<p>This is probably not ideal, but it is what it is.</p>
+<p>So, in a nutshell:</p>
+<ol>
+<li>Unless favicon.ico is in the root with no link, and </li>
+<li>Unless you are using a service worker, and </li>
+<li>Until the service worker kicks in,</li>
+</ol>
+<p>&#8212; then every different page will be downloading the same, <strong>unused</strong> favicon.ico, for no good reason.</p>
+<p>Long story short: place favicon.ico in the site root and there's a decent chance it will never be requested or used, until and unless it is needed.</p>
+
+</details>

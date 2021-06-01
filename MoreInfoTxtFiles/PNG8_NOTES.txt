@@ -1,0 +1,15 @@
+<details>
+<summary><span><strong>More Info</strong>: Advantages of indexed PNG-8</span> <em>PNG-8 is highly recommended</em></summary>
+<h2>Pros and cons of <strong>indexed PNG-8</strong></h2>
+<h3><strong>tldr</strong>: unless you notice a problem, <strong>use PNG-8</strong></h3>
+<p>PNG-8 is an 8-bit PNG. This means it can display up to 256 colors, rather than the 16,777,216 available to a 24-bit PNG-24.</p>
+<p>In practice, 256 colors with dithering is usually more than enough to preserve quality at the size of favicons, even when gradients are featured.</p>
+<p>Like PNG-24, PNG-8 uses lossless compression and supports alpha transparency and matte.<p>
+<p>This option crunches png icons and the bitmaps used to create favicon.ico with <strong>very minimal</strong> quality loss. Technically, it removes unused colors and saves the image as an indexed, dithered PNG-8 while preserving alpha channels (transparency).</p>
+<p>Results are usually excellent, with considerably <strong>smaller file sizes</strong> and little or no visible loss of <strong>image quality and clarity</strong>. It generally handles gradients well, especially at the size of favicons.</p>
+<p>Even at 512px x 512 px, there are only 262,144 pixels in the entire image. So even if every pixel of the image was a different color, 16 million+ available colors could not be used.<p>
+<p>For example, when using PNG-8 to create favicon.ico, the expected size is almost halved: well under 10 kB (even if uncompressed for server transfer) compared to the uncompressed average of around 14.5 kB for a favicon containing 16x16px, 32x32px and 48x48px variations.</p>
+<p>This means that even if your server or CDN does not support compression for transfer of .ico files (they should, but some don't), the file size of favicon.ico will still be < 10kb.</p>
+<p>Reducing unneccessary data and bandwidth use is always good. As a happy by-product, automated testing tools also won't nag you about your oversized favicon, even if your server doesn't allow the use of brotli/gzip for .ico</p>
+<p>If the favicons generated with PNG-8 are not up to scratch, try it again without PNG-8 in a single click.</p>
+</details>

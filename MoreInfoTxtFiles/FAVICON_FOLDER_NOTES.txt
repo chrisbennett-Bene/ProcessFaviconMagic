@@ -1,0 +1,9 @@
+<details>
+<summary><span><strong>More Info</strong>: Hide favicon stuff away in a folder</span> <em>Recommended</em></summary>
+<h2>Place favicons, browswerconfig.xml and web manifest in a separate folder, instead of site root</h2>
+<h3><strong>tldr</strong>: Use a separate folder for favicons</strong></h3>
+<p>There is no real benefit to scattering all your favicon variations, browserconfig.xml and web manifest around the root of your site.</p>
+<p>With the exception of favicon.ico, which we deal with separately because it acts very differently according to the arcane historical rules and mystical rituals of favicon.ico, there is no performance gain and no efficiency gain. It just makes your site root look unnecessarily cluttered.</p>
+<p>While we enthusiastically recommend using a separate folder for your favicons, choosing to dump them all in site root instead is as easy as clicking off this option.</p>
+<p>If you decide later that you're tired of looking at assorted favicon-related clutter in your site root, click it on again and we'll clean up the unnecessary files for you.</p>
+</details>

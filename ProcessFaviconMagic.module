@@ -1,0 +1,869 @@
+<?php namespace ProcessWire;
+
+/**
+ * FaviconMagic
+ * @author Chris Bennett
+ * ProcessWire 3.x
+ * Copyright (C) 2011 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ */
+
+class ProcessFaviconMagic extends Process implements Module {
+
+    const MODULE_NAME         = 'FaviconMagic';
+    const MODULE_DIR          = 'Process'.self::MODULE_NAME;
+    const VERSION             = '0.1.7';
+    const SUMMARY             = 'Automagic generation of files, folder and markup for your favicons, webmanifest and browserconfig. No third parties, no zip files, no hassle';
+    const AUTHOR              = 'bene - Chris Bennett';
+    const ICON                = 'star';
+    const PAGE_NAME           = 'favicon-magic';
+    
+	public static function getModuleInfo() {
+		return array(
+			'title'       => self::MODULE_NAME,__FILE__,
+			'summary'     => self::SUMMARY,
+			'version'     => self::VERSION,			
+            'author'      => self::AUTHOR,
+			'autoload'    => 'template=admin',
+			'icon'        => self::ICON,
+			'requires'    => 'ProcessWire>=3.0.17',
+		);
+	}
+	
+  	public function ___install() { 
+			
+		parent::___install();		
+        $page = $this->pages->get('name='.self::PAGE_NAME);
+		
+		if (!$page->id) {
+
+		    // Create fieldgroup, template, fields and page
+		
+		    // Create new fieldgroup
+            $fmFieldgroup               = new Fieldgroup();
+            $fmFieldgroup->name         = self::MODULE_NAME.'-fieldgroup';
+            $fmFieldgroup->add($this->fields->get('title')); // needed title field
+            $fmFieldgroup->save();
+
+            // Create new template using the fieldgroup
+            $fmTemplate                   = new Template();
+            $fmTemplate->name             = self::MODULE_NAME;
+            $fmTemplate->fieldgroup       = $fmFieldgroup;
+		    $fmTemplate->noSettings       = 1;
+            $fmTemplate->noChildren       = 1;
+            $fmTemplate->noParents        = 1;
+            $fmTemplate->allowNewPages    = 0;
+            $fmTemplate->tabContent       = self::MODULE_NAME.' Source Files';
+            $fmTemplate->noChangeTemplate = 1;
+			$fmTemplate->useRoles         = 1;
+			$fmTemplate->guestSearchable  = 0;
+		    $fmTemplate->setIcon(self::ICON);	
+			
+            $fmTemplate->save();
+            			
+			// Favicon source
+            $fmField                      = new Field();
+            $fmField->type                = $this->modules->get("FieldtypeImage"); 
+            $fmField->name                = 'fmFavicon';
+            $fmField->label               = 'Favicon';
+			$fmField->focusMode           = 'off';
+			$fmField->gridMode            = 1;
+            $fmField->extensions          = 'svg png';
+            $fmField->columnWidth         = 50;
+            $fmField->collapsed           = Inputfield::collapsedNever;
+		    $fmField->setIcon(self::ICON);
+            $fmField->addTag(self::MODULE_NAME);
+			$fmField->save();
+			
+			$fmFieldgroup->add($fmField);
+			
+			// Favicon Silhouette source
+            $fmField                      = new Field();
+            $fmField->type                = $this->modules->get("FieldtypeImage"); 
+            $fmField->name                = 'fmFaviconSilhouette';
+            $fmField->label               = 'SVG Silhouette';
+            $fmField->focusMode           = 'off';
+			$fmField->gridMode            = 1;
+            $fmField->extensions          = 'svg';
+            $fmField->columnWidth         = 50;
+            $fmField->collapsed           = Inputfield::collapsedNever;
+		    $fmField->setIcon(self::ICON);
+            $fmField->addTag(self::MODULE_NAME);
+            $fmField->save();
+
+			$fmFieldgroup->add($fmField);
+			
+			$fmFieldgroup->save();
+			
+            // Create page
+            $page = $this->wire( new Page() );
+            $page->template = self::MODULE_NAME;
+            $page->parent = $this->wire('pages')->get('/');
+            $page->addStatus(Page::statusHidden);
+            $page->title = 'Favicons';
+            $page->name = self::PAGE_NAME;
+            $page->process = $this;
+            $page->save();
+	   
+	    }
+	}	
+	
+	public function ___uninstall() {
+	
+		parent::___uninstall();	
+		$page = $this->pages->get('name='.self::PAGE_NAME);
+		
+		if ($page->id) {
+		    $page->delete();			
+		}
+		
+		$addedTemplate = $this->templates->get(self::MODULE_NAME);
+		if ($addedTemplate) {
+		    $this->templates->delete($addedTemplate);
+		}	
+		
+		$addedFieldgroup = $this->fieldgroups->get(self::MODULE_NAME.'-fieldgroup');
+		
+		if ($addedFieldgroup) {		
+		    $this->fieldgroups->delete($addedFieldgroup);
+        		
+        }
+		
+		$addedFields = $this->wire->fields->find('tags='.self::MODULE_NAME.'');
+
+		foreach($addedFields as $addedField) {
+			
+			$this->wire->fields->delete($addedField);
+		
+		}
+	}
+
+	public function init() {
+		// Important to be able to grab unsaved checkbox values, including the select/delete options, which will never be saved
+		$this->addHookAfter('InputfieldCheckbox::processInput', $this, 'selectDelete');
+	}
+	
+	public function ready() {
+
+		// Need to determine whether or not to hook/load/set based on $page being viewed, so attached in ready() rather than init(). 
+		// ready() is called for autoload modules right after ProcessWire determines what $page is going to be viewed.
+		
+		/* Get id of page being edited */
+		$page_id = $this->input->id; // Get the id of the page being edited, rather than ProcessPageEdit. Hindsight 20/20.
+	
+		
+		/* Load page specific hooks, styles, scripts and set config if id matches target  */
+		if( $page_id == $this->pages->get(self::PAGE_NAME)->id ) {
+		
+		    // Load all these only if the page being edited matches the one we want
+		    // In this case PAGE_NAME is a const I set to make it obvious for me and a little more easily re-usable
+			
+			/* Set up config */
+		    $configSet =  $this->modules->getConfig(self::MODULE_DIR);    // Check to see if saveConfig for module has been set before loading defaults      
+		   
+            if (!$configSet) {                                           // If module config has not already been set, populate with existing defaults
+
+	            $defaultData = $this->modules->get(self::MODULE_DIR);    // Get default config data declared in getDefaults() function of moduleConfig
+
+	            $configDefaults = array();                               // Create $configDefaults array 
+
+	            foreach ($defaultData as $key => $value) {               // Populate $configDefaults array with default values
+	               $configDefaults[$key] = $value;
+	            }
+                
+	           $this->modules->saveConfig(self::MODULE_DIR, $configDefaults);  // Save module config and populate with $configDefaults
+			   
+			}
+			
+			/* add module specific hooks */
+			
+			// hook before ::processInput so we can display default module config data and update it when it changes
+		    $this->pages->addHookBefore('InputfieldWrapper::processInput', $this, 'updateConfig');
+			
+			// Hook after ProcessPageEdit::buildForm and ProcessPageEdit::buildFormContent to add tabs
+			// Allows easier combination of both api fieldtypes and inputfields in one tidy form
+			// Hat tip to @bernhard, @adrian and @kixe | https://processwire.com/talk/topic/15870-how-to-add-own-tab-in-admin-on-edit-page-via-api/
+		    $this->addHookAfter("ProcessPageEdit::buildForm", $this, "addTabs");
+            $this->addHookAfter("ProcessPageEdit::buildFormContent", $this, "addTabs");
+
+			$this->addHookAfter('Inputfield::render', function(HookEvent $event) {
+                $inputfield = $event->object;
+                if($inputfield->showIf) {
+					$inputfield->addClass('showHide InputfieldStateHidden', 'wrapClass');
+				}
+				
+				if($inputfield->hasClass('rangeSlider')) {
+					// An 'after' hook can retrieve and/or modify the return value
+                    $return = $event->return;
+					
+                    /* Your code here, perhaps modifying the return value */
+					$dataType = $inputfield->getAttribute('data-type');
+					$minValue = $inputfield->getAttribute('min');
+					$maxValue = $inputfield->getAttribute('max');
+					$min = ($minValue) ? ' min="' . $minValue . '"' : '';
+					$max = ($maxValue) ? ' max="' . $maxValue . '"' : '';
+			        $return .= '<input type="number" class="rangeSliderDisplay"' . $min . $max . '>';
+					$return .= ($dataType) ? '<div class="rangeUnits">'. $dataType . '</div>' :'';
+                    // Populate back return value, if you have modified it
+                    $event->return = $return;
+				}
+				
+            });
+	
+			/* Add module specific css and js */
+			$this->config->styles->add ( $this->config->urls->siteModules . self::MODULE_DIR . '/' . self::MODULE_NAME . '.css');
+            $this->config->scripts->add( $this->config->urls->siteModules . self::MODULE_DIR . '/' . self::MODULE_NAME . '.js' );
+			
+			/* Add module specific definitions */
+            $faviconFolder = $this->faviconFolder;
+			$relativePaths = $this->relativePaths;
+		    $root          = (!$relativePaths) ? rtrim($this->pages->get('/')->httpUrl , '/') : '';	
+			
+			if ($faviconFolder && !empty($this->symlink)) {
+                $nominatedSymlink = ltrim(rtrim($this->symlink, '/'), '/');
+                $symlinkLink      = $_SERVER['DOCUMENT_ROOT'] . '/' . $nominatedSymlink . '/';
+		        $symlinkActive    = ( realpath($symlinkLink) === realpath($this->config->paths->files) ) ? true : false;
+		   
+			} else {
+			    $symlinkActive    = false;
+				$nominatedSymlink = false;
+			}
+			if ($faviconFolder) {
+                $path             = $this->config->paths->files;
+		        $folderName       = ($this->folderName) ? ltrim(rtrim($this->folderName, '/'), '/') : 'favicons';	
+		        $folderRelative   = ($symlinkActive) ? '/' . $nominatedSymlink . '/' : $this->config->urls->files;
+			} else {
+                $path             = $this->config->paths->root;
+			    $folderName       = '';
+				$folderRelative   = '';
+			}
+
+
+	        define("FOLDER_PATH",    $path.$folderName . '/');
+		    define("FOLDER_URL",     $root.$folderRelative.$folderName . '/');
+		    define("BASE_URL",       $root);
+            define("SYMLINK_ACTIVE", $symlinkActive);
+			define("SYMLINK_FILES",  $nominatedSymlink);
+		}
+	}
+	
+	public function updateConfig(HookEvent $event) {
+		
+        $input = $event->arguments(0);                            // Get values of arguments sent to hook. Allows us to access and changes changes.
+	  
+        $defaultData = $this->modules->get(self::MODULE_DIR);           // get defaults declared in moduleConfig getDefaults() to use as $key to populate new $updateConfig array	        
+		$updatedConfig = array();                                 // Create new array to store updated Config data
+
+        foreach ($defaultData as $key => $value) {                // Loop over $input to update config using the default keys    
+			
+            $updatedConfig[$key] = $input[$key];
+			
+        }
+       
+		$this->modules->saveConfig(self::MODULE_DIR, $updatedConfig);   // Save updated module config  
+		 
+    }
+	
+	public function addTabs(HookEvent $event) {
+		
+		$data     =  $this->modules->getConfig(self::MODULE_DIR);          // Get updated module config
+
+		$tabid1   = 'tab-1';
+		$tabid2   = 'tab-2';
+		$tabid3   = 'tab-3';
+        $form     = $event->return;
+        $page     = $event->process->getPage();
+		$fieldset = $form->find("id=ProcessPageEditDelete")->first();
+		$form->remove($fieldset);
+		$event->object->removeTab("ProcessPageEditDelete");
+		
+		// get favicon source fields to insert stuff before/after
+		$fmFav    = $form->get('fmFavicon');		
+		$fmFavMask= $form->get('fmFaviconSilhouette');
+		
+        // add new tabs
+        if($event->method == 'buildFormContent') {
+			
+            $event->process->addTab( $tabid1, 'Settings &amp; Review' );
+			$event->process->addTab( $tabid2, 'Markup' );
+			$event->process->addTab( $tabid3, 'About ');
+		
+        return;
+        }
+		
+        $field                = $this->modules->get('InputfieldMarkup');
+		$field->value         = FM_SILHOUETTE_NOTES;
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+        $field->showIf        = 'showMoreInfo=1';
+
+		$form->insertAfter($field, $fmFavMask);
+
+        $field                = $this->modules->get('InputfieldMarkup');
+		$field->value         = FM_FAVICON_SRC_NOTES;
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+        $field->showIf        = 'showMoreInfo=1';
+		
+		$form->insertAfter($field, $fmFavMask);
+
+        // Tab 1: Settings and Review
+        $tab                  = new InputfieldWrapper();
+        $tab->id              = $tabid1;
+
+        
+		// Advanced Settings
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'showAdvanced';
+        $field->checked       = $data[$field->name];
+	    $field->label         = 'Show Advanced Settings';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 25;
+		
+        $tab->add($field);
+
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'showMoreInfo';
+        $field->checked       = $data[$field->name];
+	    $field->label         = 'Show \'More Info\' if available';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 25;
+        $field->showIf        = 'showAdvanced=1';
+
+        $tab->add($field);
+		
+        $field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'generateNewFavicons';
+        $field->label         = 'Generate New Favicons';
+        $field->icon          = self::ICON;
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 25;
+        $field->attr('class', 'autoSaveOnChange autoGenerateNew');
+
+        $tab->add($field);
+
+        // Business Name/Description/App Name  Wrapper
+        $wrapper             = new InputfieldWrapper();
+        $wrapper->collapsed  = Inputfield::collapsedNever;
+        $wrapper->class      = 'inline pickers';
+		
+		$field               = $this->modules->get('InputfieldText');
+	    $field->name         = 'businessName';
+        $field->value        = $data[$field->name];
+	    $field->label        = 'Business Name';
+	    $field->icon         = 'cogs';
+        $field->placeholder  = 'Max of 45 characters, recommend less than 30';
+		$field->maxlength    = 45;
+		$field->size         = 50;
+		$field->showCount    = 1;
+	    $field->collapsed    = Inputfield::collapsedNever;
+        $field->columnWidth  = 50;
+
+		$wrapper->add($field);
+		
+		$field               = $this->modules->get('InputfieldText');
+	    $field->name         = 'businessDesc';
+        $field->value        = $data[$field->name];
+	    $field->label        = 'Description';
+	    $field->icon         ='cogs';
+	    $field->collapsed    = Inputfield::collapsedNever;
+        $field->columnWidth  = 50;
+
+		$wrapper->add($field);
+		
+		$field               = $this->modules->get('InputfieldText');
+	    $field->name         = 'androidAppName';
+        $field->value        = $data[$field->name];
+	    $field->label        = 'App Short Name';
+	    $field->icon         = 'android';
+        $field->placeholder  = '10 characters *should* fit on one line on most devices';
+		$field->maxlength    = 12;
+		$field->size         = 12;
+		$field->showCount    = 1;
+	    $field->collapsed    = Inputfield::collapsedNever;
+        $field->columnWidth  = 50;
+
+		$wrapper->add($field);
+		
+        // theme color
+        $field                = $this->modules->get('InputfieldText');
+        $field->name          = 'themeColor';
+		$field->value         = $data[$field->name];
+        $field->label         = 'App Theme Color';
+        $field->icon          = 'android';		
+        $field->placeholder   = '#rrggbb or #rgb - Right-click to copy, paste or remove hex code';
+        $field->class         = 'colorpicker';
+        $field->maxlength     = 7;
+        $field->minlength     = 7;
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth  = 50;
+		
+	    $wrapper->add($field);
+		$tab->add($wrapper);
+        
+		// ADVANCED SETTINGS
+        // color wrapper
+		$wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'pickers optional';
+		$wrapper->label       = 'OPTIONAL: set colors for Apple Touch, Safari Pinned Tab/Focus and MS Tiles';
+        $wrapper->description = 'Please note: Colors for Apple Touch, Safari Pinned Tab/Focus and MS Tiles will automatically be generated from App Theme color if left blank';
+        $wrapper->icon        = 'paint-brush';
+        $wrapper->collapsed   = Inputfield::collapsedBlank;
+        $wrapper->showIf      = 'showAdvanced=1';		
+        // apple touch color
+	    $field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'appleTouchColor';
+		$field->value         = $data[$field->name];
+	    $field->label         = 'OPTIONAL - Set Apple Touch Background Color';
+        $field->description   = ProcessFaviconMagicConfig::APPLETOUCH;
+	    $field->icon          = 'apple';
+        $field->placeholder   = '#rrggbb or #rgb - Right-click to copy, paste or remove hex code';
+	    $field->class         = 'colorpicker';
+	    $field->maxlength     = 7;
+	    $field->minlength     = 7;
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 33;
+        $field->showIf        = 'showAdvanced=1';
+		
+	    $wrapper->add($field);
+		
+		// Safari Pinned Tab - mac Touch Bar / Focus Color
+	    $field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'safariPinnedTab';
+		$field->value         = $data[$field->name];
+	    $field->label         = 'OPTIONAL - Set Safari Pinned Tab Color';
+        $field->description   = ProcessFaviconMagicConfig::SAFARIPINTAB;
+	    $field->icon          = 'apple';
+        $field->placeholder   = '#rrggbb or #rgb - Right-click to copy, paste or remove hex code';
+	    $field->class         = 'colorpicker';
+	    $field->maxlength     = 7;
+	    $field->minlength     = 7;
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 33;
+        $field->showIf        = 'showAdvanced=1';
+		
+	    $wrapper->add($field);
+		
+        // MS Tiles color
+	    $field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'msTileColor';
+		$field->value         = $data[$field->name];
+	    $field->label         = 'OPTIONAL - Set MS Tile Color';
+        $field->description   = ProcessFaviconMagicConfig::MSTILES;
+	    $field->icon          = 'windows';
+        $field->placeholder   = '#rrggbb or #rgb - Right-click to copy, paste or remove hex code';
+	    $field->class         = 'colorpicker';
+	    $field->maxlength     = 7;
+	    $field->minlength     = 7;
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 33;
+        $field->showIf        = 'showAdvanced=1';
+		
+	    $wrapper->add($field);
+		
+	    $tab->add($wrapper);		
+        
+		// Wrapper for Folder and Symlink
+	    $wrapper              = new InputfieldWrapper();
+        $wrapper->collapsed   = Inputfield::collapsedNever;
+        $wrapper->class       = 'inline';
+        $wrapper->showIf      = 'faviconFolder=1, showAdvanced=1';
+		
+	    // Default Favicon Folder
+	    $field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'folderName';
+        $field->value         = $data[$field->name];
+        $field->label         = 'Favicon Folder';
+        $field->icon          = 'folder';
+	    $field->description   = (SYMLINK_ACTIVE && SYMLINK_FILES ) ? '/' . SYMLINK_FILES . '/' : $this->config->urls->files ;
+	    $field->placeholder   = 'Destination folder for favicons, webmanifest and browserconfig';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+        $wrapper->add($field);
+		
+		$field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'symlink';
+        $field->value         = $data[$field->name];
+        $field->label         = 'Symlink to /files/';
+	    $field->description   = str_replace('https://www.', '', BASE_URL) . '/';
+        $field->icon          = 'link';
+	    $field->placeholder   = 'Eg: media';
+		    if (empty($this->symlink)) {
+		        $field->notes = 'Symlink (if set) for ' . $this->config->urls->files;
+	       } else {	   
+                $symlinkStatus= (SYMLINK_ACTIVE) ? 
+                                '<strong class="success">Valid: <span> ' . SYMLINK_FILES . '<b> &#x25ba </b>'  . $this->config->urls->files . '</span></strong> ': 
+								'<strong class="warning">Warning! <span>Not a valid symlink</span></strong>'; 
+
+		$field->entityEncodeText= false;
+		$field->notes         = $symlinkStatus;   
+		}
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+	
+        $wrapper->add($field);
+		$tab->add($wrapper);
+		
+		include('Engine/FaviconMagicPreview.php');	
+		
+		// Select and Delete UNUSED favicon folders and their contents
+        $field                = $this->modules->get('InputfieldMarkup');
+        $field->label         = 'Select previous favicon folders to delete';
+        $field->description   = 'Delete favicon folders that have been created but are no longer in use'; 
+        $field->icon          = 'trash';
+        $field->id            = 'canDelete';
+        $field->textFormat    = Inputfield::textFormatNone;
+		$field->showIf        = 'showAdvanced=1';
+		
+		if(empty($canDelete)) {$field->collapsed = Inputfield::collapsedHidden; } 
+		//else                  {$field->collapsed = Inputfield::collapsedYesAjax;}  //loading via Ajax helps prevent button intercepting save js
+		
+        $table                = $this->modules->get('MarkupAdminDataTable');
+        $table->setEncodeEntities(false);
+		$table->entityEncodeText = false;
+        $table->id            = 'canDeleteTable';
+		// set header rows
+        $setTableHeaders = array(
+            '<label class="selectAll"><input type="checkbox" id="selectDeselect"><span>Select all</span></label>',
+            'Folder Name',
+            'Last Modified',
+            'Folder Location',
+        );
+
+        $table->headerRow($setTableHeaders);
+		
+        // loop through and set individual table rows
+        foreach ( $canDelete as $key => $value ) {        
+            
+            $availableTableRow = array(
+            
+                '<input type="checkbox" class="fmToggleSelect" id="'. $value .'" name="'. $value .'" value="' . $key .'">',
+                '<label for="'. $value .'" class="fmSelectLabel">'. $value .'</label>',
+                '<span class="hiddenSortTime">'.filemtime($key).'</span>' . date ('l, j F Y, h:ia (T)', filemtime($key)),
+                $key,
+            );		
+        
+        $table->row($availableTableRow); // render table row with variables set above
+
+        } // ends $canDelete foreach 
+
+        // Add in button to delete fields
+		$button = $this->modules->get('InputfieldSubmit');
+		$button->attr('id+name', 'deleteSelectedFolders');
+		$button->value = 'Delete selected folders';
+		//button->type = 'button'; auto save works with this, but hook does not
+		
+		$field->add($button);	
+		
+        $field->attr('value', $table->render());
+        $tab->add($field);
+		
+		$wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'detailsSummary showHide InputfieldStateHidden';
+		$wrapper->columnWidth = 50;
+
+        $field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'faviconFolder';
+	    $field->label         = 'Use a favicon folder instead of site root';
+        $field->checked       = $data[$field->name];
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->showIf        = 'showAdvanced=1';
+        $field->attr('class', 'autoSaveOnChange autoGenerateNew');
+		
+        $wrapper->add($field);
+		
+        $field                = $this->modules->get('InputfieldMarkup');
+		$field->value         = FM_FAVICON_FOLDER_NOTES;
+        $field->showIf        = 'showAdvanced=1, showMoreInfo=1';
+		$wrapper->add($field);
+		$tab->add($wrapper);
+		
+        $wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'detailsSummary showHide InputfieldStateHidden';
+		$wrapper->columnWidth = 50;
+
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'faviconRoot';
+        $field->checked       = $data[$field->name];
+	    $field->label         = 'Place favicon.ico in site root';
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->showIf        = 'showAdvanced=1';
+        $field->attr('class', 'autoSaveOnChange');
+		
+        $wrapper->add($field);
+		
+        $field                = $this->modules->get('InputfieldMarkup');
+		$field->value         = FM_FAVICON_ROOT_NOTES;
+        $field->showIf        = 'showAdvanced=1, showMoreInfo=1';
+		$wrapper->add($field);
+		$tab->add($wrapper);
+
+		$wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'detailsSummary showHide InputfieldStateHidden';
+		$wrapper->columnWidth = 50;
+		
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'relativePaths';
+        $field->label         = 'Use relative paths for links';
+        $field->checked       = $data[$field->name];
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->showIf        = 'showAdvanced=1';
+        $field->attr('class', 'autoSaveOnChange autoGenerateNew');
+        $field->showIf        = 'showAdvanced=1';
+		
+        $wrapper->add($field);
+
+        $field                = $this->modules->get('InputfieldMarkup');
+		$field->value         = FM_RELATIVE_ABSOLUTE_NOTES;
+        $field->showIf        = 'showAdvanced=1, showMoreInfo=1';
+		$wrapper->add($field);
+		$tab->add($wrapper);
+
+		$wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'detailsSummary showHide InputfieldStateHidden';
+		$wrapper->columnWidth = 50;
+		
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'compressPNGs';
+        $field->label         = 'Compress .png and .ico with PNG-8';
+        $field->checked       = $data[$field->name];
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->showIf        = 'showAdvanced=1';
+        $field->attr('class', 'autoSaveOnChange autoGenerateNew');
+		
+        $wrapper->add($field);
+		
+        $field                = $this->modules->get('InputfieldMarkup');
+		$field->value         = FM_PNG8_NOTES;
+        $field->showIf        = 'showAdvanced=1, showMoreInfo=1';
+		$wrapper->add($field);
+		$tab->add($wrapper);
+
+
+
+		 // field Manifest Name
+        $wrapper              = new InputfieldWrapper();
+        $wrapper->collapsed   = Inputfield::collapsedNever;
+        $wrapper->class       = 'inline';
+		$wrapper->columnWidth = 50;
+        $wrapper->showIf      = 'showAdvanced=1';
+		
+	    $field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'manifestName';
+	    $field->label         = 'Manifest name';
+        $field->value         = $data[$field->name];
+	    $field->icon          = 'cog';
+	    $field->placeholder   = 'Specify name of your Manifest file';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+        $field->showIf        = 'showAdvanced=1';
+		
+        $wrapper->add($field);	
+		
+	    $field                = $this->modules->get('InputfieldSelect');
+	    $field->name          = 'manifestExtension';
+	    $field->label         = 'Extension';
+        $field->value         = $data[$field->name];
+	    $field->icon          = 'cog';
+		$field->options       = '.json
+.webmanifest';
+	    $field->placeholder   = 'Choose the extension for your manifest';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+        $field->showIf        = 'showAdvanced=1';
+		
+        $wrapper->add($field);	
+	    $tab->add($wrapper);
+		
+		$wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'inline optional';
+		$wrapper->columnWidth = 50;
+        $wrapper->showIf      = 'showAdvanced=1';
+		
+        $field                = $this->modules->get('InputfieldText');
+	    $field->name          = 'appleAppName';
+        $field->value         = $data[$field->name];
+	    $field->label         = 'Apple App Name';
+	    $field->icon          = 'apple';
+        $field->placeholder   = '10 characters *should* fit on one line on most devices';
+		$field->maxlength     = 50;
+		$field->size          = 50;
+		$field->showCount     = 1;
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 50;
+        $field->showIf        = 'showAdvanced=1';
+		
+		$wrapper->add($field);
+	    $tab->add($wrapper);
+
+		// favicon preview
+
+
+		$wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'hideWrapperStyling';
+		$wrapper->id          = 'infoPreview';
+       // $wrapper->collapsed   = Inputfield::collapsedNever;
+
+		$field                = $this->modules->get('InputfieldMarkup'); 
+		$field->label         = 'Status and Totals';
+		$field->id            = 'faviconStatus';
+	    $field->icon          = self::ICON;
+		$field->value         = $outputResultsOverview; // generated and returned by FaviconMagicPreview.php
+		$field->collapsed     = Inputfield::collapsedNever;
+		$field->class         = 'statusField';
+        $field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+		
+		$wrap                 = new InputfieldWrapper();
+		$wrap->id             = 'mobileWrapper';
+        $wrap->class          = 'hideWrapperStyling';
+        $wrap->columnWidth    = 50;
+		
+		$field                = $this->modules->get('InputfieldMarkup'); 
+		$field->label         = 'Mobile Preview &#8212; MotoG4, mid-range Android';
+	    $field->icon          = 'android';
+		$field->value         = $outputMobilePreview; // generated and returned by FaviconMagicPreview.php
+		$field->collapsed     = Inputfield::collapsedNever;
+		$field->class         = 'mobileField';
+		
+		$wrap->add($field);
+
+		$field                = $this->modules->get('InputfieldInteger'); 
+		$field->label         = 'Zoom';
+		$field->name          = 'mobilePreviewZoom';
+        $field->value         = $data[$field->name];
+	    $field->icon          = 'search-plus';
+		$field->class         = 'rangeSlider';
+		$field->addClass('sliderInline', 'wrapClass');
+		$field->attr("id", "previewZoom");
+		$field->attr("min", "50");
+		$field->attr("max", "100");
+		$field->attr("data-type", "%");
+		$field->set("inputType", 'range');
+		$field->collapsed     = Inputfield::collapsedNever;
+		
+		$wrap->add($field);
+		$wrapper->add($wrap);
+		$tab->add($wrapper);
+        
+		$field                = $this->modules->get('InputfieldMarkup'); 
+		$field->label         = 'Favicon Previews';
+	    $field->icon          = self::ICON;
+		$field->value         = $outputFaviconMagicPreview; // generated and returned by FaviconMagicPreview.php
+		$field->collapsed     = Inputfield::collapsedNever;
+		
+		$tab->add($field);
+
+		$form->prepend($tab);
+		
+		//ends tab 1
+
+		// Tab 2: Favicon Markup Tab
+		$tab                  = new InputfieldWrapper();
+        $tab->id              = $tabid2;
+		
+		$field                = $this->modules->get('InputfieldTextarea');
+		$field->name          = 'faviconMarkup';
+		$field->attr('readonly', 'readonly');
+		$field->label         = 'Automagically-generated Favicon Markup';
+		$field->description   = 'Copy / Paste the following php include to the document <head> of your desired template/s :
+		                         **<?php include($this->config->paths->files . \'faviconMarkup/faviconMarkup.txt\') ?>** This ensures your favicon markup is always up to date.
+                                 The markup displayed below is provided for reference and review. There is no need to copy and paste it unless you wish to.
+								 
+								 Your favicons, manifest and browserconfig will continue working properly, even if the FaviconMagic module is removed.
+
+								 ';
+		$field->notes         =  'The favicon markup displayed above is automatically generated and saved as a text file in a separate faviconMarkup directory.
+		                         This ensures your favicon markup will keep working even if this module is deleted.';
+		$field->class         = 'faviconMarkup';
+	    $field->icon          = 'code';
+		$field->value         = $headMarkup; // generated and returned by FaviconMagicPreview.php
+		$field->collapsed     = Inputfield::collapsedNever;
+		
+		$tab->add($field);
+		$form->prepend($tab);
+		
+		//ends tab 2
+		
+		// Tab 3: Info and Instructions Tab
+		$tab                  = new InputfieldWrapper();
+        $tab->id              = $tabid3;
+
+        // Module Info
+	    $field                = $this->modules->get('InputfieldMarkup');
+	    $field->value         = ProcessFaviconMagicConfig::MODULE_INFO;	    
+	    $field->label         = 'What is '.self::MODULE_NAME.'?';
+	    $field->icon          = 'info-circle';
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 50;
+
+        $tab->add($field);
+
+	    // Module Instructions
+	    $field                = $this->modules->get('InputfieldMarkup');
+        $field->value         = ProcessFaviconMagicConfig::DIRECTIONS;
+        $field->label         = 'How do I use it?';
+	    $field->icon          = 'info-circle';
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 50;
+
+	    $tab->add($field);
+        $form->prepend($tab);
+		//ends tab 3
+	
+    }	
+    // remove dir function, courtesy of bernard if memory serves
+	public function rrmdir($dir) {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (filetype($dir."/".$object) == "dir") 
+                        rrmdir($dir."/".$object); 
+                        else unlink   ($dir."/".$object);
+						$this->message('Deleted: '.$object);
+                    }
+            }
+			reset($objects);
+			rmdir($dir);
+        }
+    }
+
+	##// select delete function
+
+	public function selectDelete(HookEvent $event) {
+			
+        if($this->input->post->deleteSelectedFolders){
+		    
+			$inputs = $event->arguments(0);
+            // grab path to previousFolders array, and include it if it exists	   
+            $previousFolderFile = $this->config->paths->files. 'faviconMarkup/previousFolders.php';
+            if (file_exists($previousFolderFile)) include($previousFolderFile);
+
+            // filter out current folder and re-confirm each potential target for deletion exists and can safely be deleted
+            $canDelete = array(); 
+            foreach($previousFolders as $key => $value) { 
+                if (file_exists($key) && $key != FOLDER_PATH && $key != $this->config->paths->root . '/') $canDelete[$key] =  $value;
+            } 	
+			
+			// add folders to our toDelete list if checked inputs from our $inputs are in our $canDelete array
+            $toDelete = array(); 
+            foreach($inputs as $key => $value ) {
+                if (in_array($key, $canDelete)) $toDelete[$key] =  $value;
+            }
+
+            foreach($toDelete as $key => $value ) {
+				$this->message('Successfully deleted: '. $key);
+				self::rrmdir($value);
+
+            }
+        }
+	}
+	//##
+	
+	
+}

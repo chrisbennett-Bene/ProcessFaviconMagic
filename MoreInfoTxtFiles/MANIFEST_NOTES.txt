@@ -1,0 +1,19 @@
+<details>
+<summary><span><strong>More Info</strong>: <strong>manifest.json</strong> is bulletproof</span> <em>Optional</em></summary>
+<h2>Your web manifest name can be whatever you like: the choice between .json and .webmanifest can be more "interesting"</h2>
+<h3><strong>tldr</strong>: <strong>.json</strong>, is hassle-free regardless of web host</h3>
+<p>According to the specifications, the "official" extension for your web manifest "should" be .webmanifest. Regardless of whether it is .json or .webmanifest, browsers will treat both as JSON and will work properly.</p>
+<p>Because the spec is relatively new, some web hosts will not automatically recognize .webmanifest.</p>
+<p>Generally epeaking, it's not too complicated to add the .webmanifest info to your htaccess.</p>
+<p>It's not hard to add types and encoding, it's just an added item to do.</p>
+<p>You might end up with something like this in your htaccess:</p>
+<pre><code>AddDefaultCharset UTF-8
+AddCharset UTF-8 .webmanifest
+DefaultLanguage en
+AddType application/manifest+json .webmanifest
+</code></pre>
+<p>Unfortunately, some hosts &#8212; like Siteground, for example &#8212; no longer allow the option to add new file types with htaccess to their automatic default brotli/gzip transfer compression.</p>
+<p>While the file is tiny either way, if warnings about your web manifest not being compressed and/or the added inconvenience of adding type and default character encoding for .webmanifest do not appeal, then .json is a very solid alternative, that works out of the box.</p>
+<p>Of course, some online testing tools will flag your use of .json as an issue because it is not the newly "correct" extension for your web manifest.</p>
+<p>Either way, browsers treat the info as JSON, so in a perfect world none of this would even be a thing worth considering.</p>
+</details>

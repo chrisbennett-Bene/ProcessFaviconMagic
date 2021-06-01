@@ -1,0 +1,10 @@
+<details>
+<summary><span><strong>More Info</strong>: use relative links</span> <em>Recommended</em></summary>
+<h2>Pros and cons of <strong>absolute vs relative</strong> links</h2>
+<h3><strong>tldr</strong>: there's no real difference, so <strong>use the simple one: relative</strong></h3>
+<p>Absolute links include the full domain name of your site with every link to a file. For example: <strong>https://www.domainname.com</strong>/folder/subfolder/filename.ext</p>
+<p>Relative links show only the path to the file from the site root (domain). For example: /folder/subfolder/filename.ext</p>
+<p>Given the browser knows where your root is (because you are there) absolute links are not necessary.</p>
+<p>Manifest, browserconfig and links to favicons all work the same whether they are defined as relative or absolute links. The choice is largely a matter of preference and/or company policy.</p>
+<p>Defaults to relative because the links are simpler and smaller, but changing that is as simple as toggling this option on or off, whichever you prefer.</p>
+</details>

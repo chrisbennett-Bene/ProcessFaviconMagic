@@ -1,3 +1,45 @@
 # ProcessFaviconMagic
-Easy-to-use favicon, web manifest and browserconfig generator for processwire. 
-## Designed just for processwire, FaviconMagic simplifies your workflow with custom markup and automatic generation of smarter options
+<h2>Easy-to-use favicon, web manifest and browserconfig generator for processwire</h2>
+<h3>Designed just for processwire, FaviconMagic simplifies your workflow with custom markup and automatic generation of smarter options</h3>
+<ul class="tick">
+<li>Simple to use and easy to edit</li>
+<li>Review generated favicons, sizes, information and settings on the same page</li>
+<li>Good defaults with a range of advanced settings (if you need them)</li>
+<li>No third party scripts, sites or processing</li>
+<li>No need to ever paste in markup again once you set up FaviconMagic</li>
+<li>Support for svg favicons!</li>
+<li>Automatic generation of maskable icon and Lighthouse-friendly manifest, suitable for PWA</li>
+</ul>
+<p>FaviconMagic takes many of the best ideas and principles of realfavicongenerator (which has always rocked) and implements improvements on them in a seamless processwire environment.</p>
+<p>Generating favicon variations is based around manipulating your svg source and outputting once resized, with fallbacks for png.</p>
+<p>It's much more than a clone of realfavicongenerator: minor annoyances are eliminated, workflow is smoothed and smarter automatic options are implemented.</p>
+
+<p>The goal is to provide bang for buck: use the best favicons for modern browsers, while allowing crisp, low-bandwidth fallbacks for others.</p>
+<p>This is achieved by threading the needle between what browsers "expect", and what we want to give them.</p>
+
+<h3>A short example: encouraging the chromium-based browsers not to download favicons they won't use anyway</h3>
+<p>If we markup an old-school shortcut link to ye olde favicon.ico, chromium browsers will obediently download it, via a no-cache request. They won't use it, but it will be downloaded again and again on every different page unless prevented by your service worker or CDN.</p>
+<p>None of this is a huge deal but if we just place favicon.ico in the site root instead, the issue of wasted bandwidth goes away, entirely.</p>
+<p>Similarly, chromium browsers will try to download a 192x192px favicon from your web manifest, even when they already have a tiny svg which looks great no matter how big it is.</p>
+
+<p>It's not unreasonable to want Chrome/Edge/Brave/Opera etc to see the web manifest and download the tiny favicon svg, instead of the larger 192x192 png it is used to requesting by default.</p>
+<p>Not a game-breaking bandwidth hog, but mildly annoying: around 15kb for a non-scalable png versus less than 2kb for an infinitely scalable and infinitely crisp svg.</p>
+<p>The FaviconMagic web manifest answer to this is:</p> 
+
+<ol>
+<li>Declare your svg last, after all your pngs &#8212; last one that is *suitable* size *must* get the nod.</li>
+<li>Declare the following sizes for your svg &#8212; "sizes": "48x48 72x72 96x96 128x128 <strong>150x150</strong> 256x256 512x512 1024x1024",</li>
+</ol>
+<p>Sadly, setting 192x192 for your svg size doesn't achieve the desired result.  ¯\_(ツ)_/¯  <br>Happily, the addition of the unusual 150x150 size instead does.</p>
+<p>With favicon.ico in the root, and the correct size definition on your svg, chromium browsers download the same tiny svg twice (because of their no-cache request), instead of downloading the svg, favicon.ico and the 192x192px favicon. It has no effect on what the browers can display, they have no need for the last two.</p>
+<p>In the event someone wants to add your site as an app with a Chrome shortcut on their Windows 7 machine, Chrome will happily oblige and get favicon.ico when it is needed.</p>
+<p>More relevant in the modern world, threading the needle with this size declaration for your svg results in Android app start screens looking fancy, with a nice large favicon instead of the sometimes unnecssarily small maskable option.</p> 
+<p>Happily, FaviconMagic will automatically do this stuff for you, so you don't have to.</p>
+
+	
+<h2><strong>Benefits of FaviconMagic</strong></h2>
+<p>By design, both the favicons that are generated and separate folder containing a simple text file of the favicon markup are independent of the module.</p>
+<p> Even if you delete the module, your favicons and webmanifest will continue working until you make deliberate changes.</p>
+<p>You don't need to touch a zip file, copy/paste new markup or worry about missing files.</p>
+<p>FaviconMagic takes care of all the favicon generation, creates a folder, web manifest and browesrconfig and generates the markup for you.</p>
+<p>Upload your image or images, check the results on the same page, then click save and you're done.</p>

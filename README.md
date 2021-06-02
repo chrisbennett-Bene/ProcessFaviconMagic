@@ -1,13 +1,13 @@
 # ProcessFaviconMagic
-<h2>Easy-to-use favicon, web manifest and browserconfig generator for processwire</h2>
+<h2>Easy-to-use favicons, web manifest and browserconfig for processwire</h2>
 <h3>Designed just for processwire, FaviconMagic simplifies your workflow with custom markup and automatic generation of smarter options</h3>
 <ul class="tick">
 <li>Simple to use and easy to edit</li>
+<li><strong>Support for svg favicons</strong>!</li>
 <li>Review generated favicons, sizes, information and settings on the same page</li>
 <li>Good defaults with a range of advanced settings (if you need them)</li>
-<li>No third party scripts, sites or processing</li>
+<li>No third party scripts or sites</li>
 <li>No need to ever paste in markup again once you set up FaviconMagic</li>
-<li>Support for svg favicons!</li>
 <li>Automatic generation of maskable icon and Lighthouse-friendly manifest, suitable for PWA</li>
 </ul>
 <p>FaviconMagic takes many of the best ideas and principles of realfavicongenerator (which has always rocked) and implements improvements on them in a seamless processwire environment.</p>

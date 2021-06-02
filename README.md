@@ -164,7 +164,7 @@
 <p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
 
 
-<h2 id="manifest">The the choice of .json or .webmanifest can be "interesting"</h2>
+<h2 id="manifest">The choice of .json or .webmanifest can be "interesting"</h2>
 <h3><strong>tldr</strong>: <strong>.json</strong>, works and is hassle-free regardless of web host</h3>
 <p>According to the specifications, the "official" extension for your web manifest "should" be .webmanifest. Regardless of whether it is .json or .webmanifest, browsers treat both as JSON and will work properly.</p>
 <p>Because the spec is relatively new, some web hosts will not automatically recognize .webmanifest.</p>

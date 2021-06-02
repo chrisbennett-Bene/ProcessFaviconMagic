@@ -50,11 +50,21 @@
 <p>You can take this a step further and make things easier over multiple sites. Assuming you use consistent naming patterns, you can add links to your database fields in the getDefaults() array of ProcessFaviconModuleConfig.php, using something along these lines:</p>
 	
 <pre><code>
-'symlink'        => ($this->config->customFilesAlias) ? $this->config->customFilesAlias :'',			 
-'themeColor'     => ($this->pages->get("/settings")->business_Color) ? $this->pages->get("/settings")->business_Color: '',
-'businessName'   => ($this->pages->get("/settings")->business_Name)  ? $this->pages->get("/settings")->business_Name: '',
-'businessDesc'   => ($this->pages->get("/settings")->business_Blurb) ? $this->pages->get("/settings")->business_Blurb: '',
-'androidAppName' => ($this->pages->get("/settings")->business_Abbreviation) ? $this->pages->get("/settings")->business_Abbreviation : '',
+'symlink'        => ( $this->config->customFilesAlias ) 
+                    ? $this->config->customFilesAlias 
+		    :'',			 
+'themeColor'     => ( $this->pages->get("/settings")->business_Color ) 
+                    ? $this->pages->get("/settings")->business_Color
+		    : '',
+'businessName'   => ( $this->pages->get("/settings")->business_Name ) 
+                    ? $this->pages->get("/settings")->business_Name
+		    : '',
+'businessDesc'   => ( $this->pages->get("/settings")->business_Blurb ) 
+                    ? $this->pages->get("/settings")->business_Blurb
+		    : '',
+'androidAppName' => ( $this->pages->get("/settings")->business_Abbreviation ) 
+                    ? $this->pages->get("/settings")->business_Abbreviation 
+		    : '',
 </code></pre>
 <p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
 <h3 id="autocrop">Automatic cropping of excess transparent backgrounds where appropriate</h3>

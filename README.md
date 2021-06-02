@@ -14,13 +14,34 @@
 <p>Generating favicon variations is based around manipulating your svg source and outputting once resized, with fallbacks for png.</p>
 <p>It's much more than a "clone" of realfavicongenerator: minor annoyances are eliminated, workflow is smoothed and smarter automatic options are implemented. The goal is to provide bang for buck: use the best favicons for modern browsers, while allowing crisp, low-bandwidth fallbacks for others.</p>
 <p>This is achieved by threading the needle between what browsers "expect", and what we want to give them.</p>
+<ul id="toc">
+	<li><h3><a href="#benefits">Benefits of Favicon Magic</a></h3>
+		<ul>
+			<li><a href="#smarterchoices">Smarter Automagic choices</a></li>
+			<li><a href="#autocrop">Automatic cropping where appropriate</a></li>
+			<li><a href="#svgmarkup">Automatic inclusion of markup for svg icons</a></li>
+			<li><a href="#autoadaptive">Automatic generation and inclusion of markup for adaptive maskable icons</a></li>
+		</ul>
+	</li>
+	<li><h3><a href="#using">Using FaviconMagic</a></h3></li>
+	<li><h3><a href="#advancedsettings">Advanced Settings</a></h3>
+		<ul>
+			<li><a href="#faviconfolder">Hide favicon stuff away in a folder</a></li>
+			<li><a href="#faviconroot">Place favicon.ico at site root</a></li>
+			<li><a href="#relativelinks">Use relative links</a></li>	
+			<li><a href="#png8">Compress as PNG-8</a></li>				
+			<li><a href="#manifest">Manifest name and extension</a></li>	
+		</ul>
+	</li>
+		<li><h3><a href="#example">Example of encouraging browsers to choose the "right" favicon</a></h3></li>
+</ul>
 
-<h2><strong>Benefits of FaviconMagic</strong></h2>
+<h2 id="benefits"><strong>Benefits of FaviconMagic</strong></h2>
 <p>By design, both the favicons that are generated and the separate folder containing a text file of the favicon markup are independent of the module. Even if you delete the module, your favicons and webmanifest will continue working until you make deliberate changes.</p>
 <p><strong>You don't need to touch a zip file, copy/paste new markup or worry about missing files</strong>.</p>
 <p>FaviconMagic takes care of all the favicon generation, creates a folder, web manifest and browesrconfig and generates the markup for you. Upload your image or images, add a couple of names and your theme color, check the results, click save and you're done.</p>
-
-<h3>Smarter automagic choices</h3>
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+<h3 id="smarterchoices">Smarter automagic choices</h3>
 <p>Wherever possible, choices that are likely to be the same for multiple devices are defined in one place.</p>	
 <p>There is no good reason to paste the same hex code in multiple places to set the same color for Android, Apple and MS Tiles. FaviconMagic won't make you do that.</p>
 <p>The same principle applies to things like app names and manifest short names &#8212; they're all roughly the same size, so FaviconMagic will automatically use one, with the ability to over-ride it if you need to.</p>
@@ -35,21 +56,43 @@
 'businessDesc'   => ($this->pages->get("/settings")->business_Blurb) ? $this->pages->get("/settings")->business_Blurb: '',
 'androidAppName' => ($this->pages->get("/settings")->business_Abbreviation) ? $this->pages->get("/settings")->business_Abbreviation : '',
 </code></pre>
-
-<h3>Automatic cropping of excess transparent backgrounds where appropriate</h3>
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+<h3 id="autocrop">Automatic cropping of excess transparent backgrounds where appropriate</h3>
 <p>2 or 3 pixels off either side makes a very big difference when you only have 16px to begin with. Smaller icons, such as 16x16 and 32x32, are automatically cropped and resized.</p>
 <p>Automatically removing empty background allows them to fit the available canvas, so you can provide decent padding at large sizes while still maximising impact at small sizes.</p>
 <p>This means you don't need to worry about padding and/or providing multiple resized versions for different sizes.</p>
 
-<h3>Automatic inclusion of markup for svg icons</h3>
+<h3 id="svgmarkup">Automatic inclusion of markup for svg icons</h3>
 <p>If your source image is svg, FaviconMagic will automatically generate Markup for your svg favicon. 
 
-<h3>Automatic generation and inclusion of markup for adaptive maskable icons</h3>
+<h3 id="autoadaptive">Automatic generation and inclusion of markup for adaptive maskable icons</h3>
 <p>FaviconMagic will automatically generate an adaptive maskable icon and add markup for it to for your webmanifest.</p>
 <p>The adaptive maskable icon cannot be transparent. It is generated with a background color based on your theme color and safe space automatically calculated.</p>
 <p>No hassles, no worry, no need for special fussing unless you want to.</p>
 
-<h2>Advanced Settings</h2>
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+
+
+<h2 id="using">Using FaviconMagic</h2>
+<ol>
+<li>Install the module</li>
+<li>Choose your source file and an optional silhouette/mask svg</li>
+<li>Add a couple of names and your theme color</li>
+<li>Click <strong>Generate New Icons</strong></li>
+<li>Include the favicon markup in the &#60;head&#62; of your template/s</li>
+</ol>
+<h3>Include the favicon markup in the &#60;head&#62; of your template/s</h3>
+<p>Ensure your markup always stays up to date by copying and pasting the code below in the &#60;head&#62; of the template/s where you want your favicons, web manifest and browserconfig to appear.</p>
+<p><code>&lt;?php include($this->config->paths->files . 'faviconMarkup/faviconMarkup.txt') ?></code></p>
+<p>The markup this include links to is automatically generated and saved as a text file to the <strong>faviconMarkup</strong> folder to ensure your favicon markup keeps working even if this module is deleted.</p>
+<p>This is a one-time thing and is the last time you'll need to copy/paste anything to do with markup.</p>
+<p>Like a lot of things with FaviconMagic, you could choose to copy and paste the generated favicon markup code to the &#60;head&#62; of your document if you prefer.</p>
+<p>We don't recommend that. The include method is simply more robust and more flexible: if something important changes, it changes.</p>
+
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+
+
+<h2 id="advancedsettings">Advanced Settings</h2>
 <h3>There are a range of advanced options, most of which you can ignore, or alter at your leisure.</h3>
 <p>Advanced Settings are shown by default when the module is initially installed but can easily be hidden once you are happy with them. Naturally, they can be accessed and altered at any time.</p>
 	
@@ -66,18 +109,15 @@
 <li>Option to specify device-specific colors and names</li>
 </ul>
 	
-<h3><strong>More detailed information:</strong> options, recommendations and defaults</h3>
-<details>
-<summary><span><strong>More Info</strong>: Hide favicon stuff away in a folder</span> (<em>Recommended</em>)</summary>
-<h2>Place favicons, browswerconfig and web manifest in a separate folder</h2>
+<h2 id="faviconfolder">Place favicons, browswerconfig and web manifest in a separate folder</h2>
 <h3><strong>tldr</strong>: Use a separate folder for favicons instead of site root</strong></h3>
 <p>There is no real benefit to scattering all your favicon variations, browserconfig.xml and web manifest around the root of your site.</p>
 <p>With the exception of favicon.ico, which we deal with separately because it acts according to the arcane historical rules and mystical rituals of favicon.ico, there is no performance gain and no efficiency gain. It just makes your site root unnecessarily cluttered.</p>
 <p>While we enthusiastically recommend using a separate folder for your favicons, choosing to dump them all in site root instead is as easy as clicking off this option. If you decide later that you're tired of favicon-related clutter in your site root, click it on again and FaviconMagic will clean up the unnecessary files for you.</p>
-</details>
-<details>
-<summary><span><strong>More Info</strong>: place favicon.ico at root</span> (<em>Highly recommended</em>)</summary>
-<h2>Place favicion.ico at site root</h2>
+
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+
+<h2 id="faviconroot">Place favicion.ico at site root</h2>
 <h3><strong>tldr</strong>: avoid hassle, place <strong>favicion.ico at site root</strong></h3>
 <p>Regardless of where other favicons, browserconfig and webmanifest are placed, it is <strong>much better</strong> to place favicon.ico at the root of your site. The alternative is to direct browsers to your favicon through the old shortcut meta tag.</p>
 <p>Because of the ancient and weird ways of favicon.ico, this is not great.</p>
@@ -93,20 +133,21 @@
 <p>&#8212; then every different page will be downloading the same, <strong>unused</strong> favicon.ico, for no good reason.</p>
 <p>Long story short: place favicon.ico in the site root and there's a decent chance it will never be requested, unless it is needed.</p>
 
-</details>
-<details>
-<summary><span><strong>More Info</strong>: use relative links</span> (<em>Recommended</em>)</summary>
-<h2>Pros and cons of <strong>absolute vs relative</strong> links</h2>
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+
+
+<h2 id="relativelinks">Pros and cons of <strong>absolute vs relative</strong> links</h2>
 <h3><strong>tldr</strong>: there's no real difference, so <strong>use the simple one: relative</strong></h3>
 <p>Absolute links include the full domain name of your site with every link to a file. For example: <strong>https:&#47;&#47;www&#x2e;domainname&#x2e;com</strong>/folder/subfolder/filename.ext</p>
 <p>Relative links show only the path to the file from the site root (domain). For example: /folder/subfolder/filename.ext</p>
 <p>Given the browser knows where your root is (because you are there) absolute links are not necessary.</p>
 <p>Manifest, browserconfig and links to favicons all work the same whether they are defined as relative or absolute links. The choice is largely a matter of preference and/or company policy.</p>
 <p>Defaults to relative because the links are simpler and smaller. Changing is as simple as toggling this option on or off, whichever you prefer.</p>
-</details>
-<details>
-<summary><span><strong>More Info</strong>: Advantages of PNG-8</span> (<em>PNG-8 is highly recommended</em>)</summary>
-<h2>Pros and cons of <strong>indexed PNG-8</strong></h2>
+
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+
+
+<h2 id="png8">Pros and cons of <strong>indexed PNG-8</strong></h2>
 <h3><strong>tldr</strong>: unless you notice a problem, <strong>use PNG-8</strong></h3>
 <p>PNG-8 is an 8-bit PNG. This means it can display up to 256 colors, rather than the 16,777,216 available to a 24-bit PNG-24.</p>
 <p>In practice, 256 colors with dithering is usually enough to preserve quality at the size of favicons, even when gradients are featured.</p>
@@ -119,10 +160,11 @@
 <p>This means that even if your server or CDN does not support compression for transfer of .ico files (they should, but some don't), the file size of favicon.ico will still be < 10kb.</p>
 <p>Reducing unneccessary data and bandwidth use is always good. As a happy by-product, automated testing tools won't nag you about your oversized favicon, even if your server doesn't allow the use of brotli/gzip for .ico</p>
 <p>If the favicons generated with PNG-8 are not up to scratch, try it again without PNG-8 in a single click.</p>
-</details>
-<details>
-<summary><span><strong>More Info</strong>: <strong>manifest.json</strong> is bulletproof</span> (<em>Optional</em>)</summary>
-<h2>The the choice of .json or .webmanifest can be "interesting"</h2>
+
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
+
+
+<h2 id="manifest">The the choice of .json or .webmanifest can be "interesting"</h2>
 <h3><strong>tldr</strong>: <strong>.json</strong>, works and is hassle-free regardless of web host</h3>
 <p>According to the specifications, the "official" extension for your web manifest "should" be .webmanifest. Regardless of whether it is .json or .webmanifest, browsers treat both as JSON and will work properly.</p>
 <p>Because the spec is relatively new, some web hosts will not automatically recognize .webmanifest.</p>
@@ -138,25 +180,11 @@ AddType application/manifest+json .webmanifest
 <p>While the file is tiny either way, if warnings about your web manifest not being compressed and/or the added inconvenience of adding type and default character encoding for .webmanifest do not appeal, then .json is a very solid alternative, that works out of the box.</p>
 <p>Of course, some online testing tools will flag your use of .json as an issue because it is not the newly "correct" extension for your web manifest.</p>
 <p>Either way, browsers treat the info as JSON, so in a perfect world none of this would even be a thing worth considering.</p>
-</details>
 
-<h2>Using FaviconMagic</h2>
-<ol>
-<li>Install the module</li>
-<li>Choose your source file and an optional silhouette/mask svg</li>
-<li>Add a couple of names and your theme color</li>
-<li>Click <strong>Generate New Icons</strong></li>
-<li>Include the favicon markup in the &#60;head&#62; of your template/s</li>
-</ol>
-<h3>Include the favicon markup in the &#60;head&#62; of your template/s</h3>
-<p>Ensure your markup always stays up to date by copying and pasting the code below in the &#60;head&#62; of the template/s where you want your favicons, web manifest and browserconfig to appear.</p>
-<p><code>&lt;?php include($this->config->paths->files . 'faviconMarkup/faviconMarkup.txt') ?></code></p>
-<p>The markup this include links to is automatically generated and saved as a text file to the <strong>faviconMarkup</strong> folder to ensure your favicon markup keeps working even if this module is deleted.</p>
-<p>This is a one-time thing and is the last time you'll need to copy/paste anything to do with markup.</p>
-<p>Like a lot of things with FaviconMagic, you could choose to copy and paste the generated favicon markup code to the &#60;head&#62; of your document if you prefer.</p>
-<p>We don't recommend that. The include method is simply more robust and more flexible: if something important changes, it changes.</p>
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>
 
-<h2>A short example: "encouraging" browsers not to download favicons they won't use</h2>
+
+<h2 id="example">A short example: "encouraging" browsers not to download favicons they won't use</h2>
 <p>If we markup an old-school shortcut link to ye olde favicon.ico, chromium-based browsers will obediently download it, via a no-cache request. They won't use it, but it will be downloaded repeatedly on every page unless prevented by your service worker or CDN.</p>
 <h3>If we place favicon.ico in the site root, the issue goes away, entirely.</h3>
 <p>Similarly, chromium browsers will try to download a 192x192px favicon from your web manifest, even when they already have a tiny svg which looks great no matter how big it is.</p>
@@ -176,3 +204,4 @@ AddType application/manifest+json .webmanifest
 <p>In the event someone wants to add your site as an app with a Chrome shortcut on their Windows 7 machine, Chrome will happily oblige and get favicon.ico when it is needed.</p>
 <p>More relevant in the modern world, threading the needle with this size declaration for your svg results in Android app start screens looking fancy, with a nice large favicon instead of the sometimes unnecssarily small maskable option.</p> 
 <p><strong>FaviconMagic takes care of this stuff for you, so you don't have to</strong>.</p>
+<p align="right"><a href="#toc">&#9650; back to <strong>Table of Contents</strong></a></p>

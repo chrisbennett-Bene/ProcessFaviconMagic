@@ -1,13 +1,12 @@
-<?php 
+<?php
 
     # creates new destination folder if it doesn't already exist
 	if ($faviconFolder && !is_dir(FOLDER_PATH) ) {
         mkdir(FOLDER_PATH);
     }
 	
-    function renderFavicon($favicon, $width, $height, $newname, $ext, $fitCanvas, $purpose, $bgcolor = 'transparent', $realWidth, $realHeight, $PATH, $URL, $png8) {
+    function renderFavicon($favicon, $width, $height, $newname, $ext, $fitCanvas, $purpose, $bgcolor = 'transparent', $realWidth, $realHeight, $PATH, $URL, $png8, $msTileSilhouette) {
         
-		$imagick        = extension_loaded('imagick') || class_exists("Imagick");
 		$options        = array('quality' => 80, 'cropping' => false, 'upscaling' => false); // fallback for non-Imagick
 		
 		$fileSrc        = $favicon;		
@@ -27,15 +26,15 @@
 			//file_put_contents($variation_name );
 		}
 		
-		if (!$imagick && $ext == 'png') {
+		if (!IMAGICK_ON && $ext == 'png') {
 			
-                $sizer = new ImageSizer( $variation_name );
+				$sizer = new  \ProcessWire\ImageSizer( $variation_name );
                 $sizer->setOptions($options);
                 $sizer->resize($width, $height);
-                ProcessWire\wire('files')->chmod( $variation_name );
+                \ProcessWire\wire('files')->chmod( $variation_name );
 				
         } // ends non Imagick resizing. 
-
+        
         if ($fitCanvas) {
             if ($width < 96) {
 				
@@ -75,7 +74,7 @@
 			
 			$svgContent = file_get_contents($svgFile);
 			
-			if ($imagick && $newname != "safari-pinned-tab") {
+			if ($newname != "safari-pinned-tab") {
 		        $svgCrop    = new Imagick($svgFile);
 	                          $svgCrop->trimImage(0);
 			    $inner      = 0.05;	
@@ -90,7 +89,7 @@
             $doc->loadXML($svgContent);
 
 		    $svgTag = $doc->getElementsByTagName('svg');
-		    if ( $newname == "safari-pinned-tab" || preg_match('/^mstile.*/', $newname) ) {
+		    if ( $newname == "safari-pinned-tab" || preg_match('/^mstile.*/', $newname) && $msTileSilhouette ) {
 			    $paths = $doc->getElementsByTagName('path');
                 
 				#change safari pinned tab color to black
@@ -113,7 +112,7 @@
 						
 			    foreach($svgTag as $tag) {
 					
-				    if ($fitCanvas && $imagick) {
+				    if ($fitCanvas && IMAGICK_ON) {
 						
 		                $tag->setAttribute("viewBox", $view_box );
 		            }
@@ -126,7 +125,7 @@
             $svgString = $doc->saveXML();
         } // ends svg manipulations
 		
-		elseif ($fitCanvas && $imagick) {
+		elseif ($fitCanvas && IMAGICK_ON) {
 			
 		   $PNGfileSrc    = $fileSrc;
 
@@ -149,7 +148,7 @@
             $pngCrop = file_get_contents($fileSrc);
 		} // ends png crop options
 				
-        if ($ext == 'png') {
+        if ($ext == 'png' && IMAGICK_ON) {
 
             $image = new Imagick();	
             $image->setBackgroundColor('transparent');
@@ -163,23 +162,25 @@
             }
 				
             $image->setImageFormat("png");
-			if ($png8) {
-				
-			    $image->setOption('png:bit-depth', '8');
-			} 
+
             $top  = (($height - $newHeight) / 2) * -1;
             $left = (($width - $newWidth) / 2) * -1;
 			
             $image->setImageBackgroundColor($bgcolor);
             $image->extentImage( $width, $height, $left, $top );
 			
+			if ($png8) {
+				
+			    $image->setOption('png:bit-depth', '8');
+			} 
+			
             $image->writeImage( $variation_name );
             $image->clear();
 				
         } // ends png output
 
-        return $variation_url; // returns url for generated favicon
-			
+		return $variation_url; // returns url for generated favicon	
+
 	} // ends renderFavicon function
 
 if (is_dir(FOLDER_PATH) ) {
@@ -196,13 +197,13 @@ if (is_dir(FOLDER_PATH) ) {
     ];
 	
 	#create ico file to add images to as we go		
-	if ($imagick) {
+	if (IMAGICK_ON) {
         $ico = new Imagick();
         $ico->setFormat("ico");
-	}
+	} else {$ico = false;}
 	
     #setup browserconfig.xml to fill as we go
-	    $browserconfig = new DOMDocument('1.0', 'UTF-8');
+	$browserconfig = new DOMDocument('1.0', 'UTF-8');
     $browserconfig->formatOutput = true;
     $root             = $browserconfig->createElement('browserconfig');
     $msapplication    = $browserconfig->createElement('msapplication'); 
@@ -243,18 +244,33 @@ if (is_dir(FOLDER_PATH) ) {
 		   $manifestType = 'image/' . $ext;
 	    } 
 		
+		$msTileSilhouette = ($silhouetteExists) ? true: false;
+		
 		# swap image sources for safari pinned tabs and mstiles if silhouette exists
-		if ( $silhouetteSVG && $faviconName == "safari-pinned-tab" || $silhouetteSVG && preg_match('/^mstile.*/', $faviconName) ) {
+		if ( $silhouetteExists && $faviconName == "safari-pinned-tab" || $silhouetteExists && preg_match('/^mstile.*/', $faviconName) && $msTileSilhouette && IMAGICK_ON) {
 
 		    $source   = $silhouetteSVG;
+		} elseif ($faviconName === "favicon" && $faviconSrcExt !=="svg") {
+			$source = false;
 			
-		} else {
+		} elseif($faviconName !== "safari-pinned-tab") {
 			
 			$source   = $favicon;
+		} else {
+			$source = false;
 		}
-		# render favicons
-	    renderFavicon( $source, $width, $height, $faviconName, $ext, $fitCanvas, $purpose, $bgcolor, $realWidth, $realHeight, FOLDER_PATH, FOLDER_URL, $png8 );
+		
 
+		
+		# render favicons
+		if (IMAGICK_ON && $source) {
+	    renderFavicon( $source, $width, $height, $faviconName, $ext, $fitCanvas, $purpose, $bgcolor, $realWidth, $realHeight, FOLDER_PATH, FOLDER_URL, $png8, $msTileSilhouette );
+		}
+		if (!IMAGICK_ON && $source && $purpose !== "maskable" && !preg_match('/^mstile.*/', $faviconName) && $faviconName !== "favicon")  {
+	    renderFavicon( $source, $width, $height, $faviconName, $ext, $fitCanvas, $purpose, $bgcolor, $realWidth, $realHeight, FOLDER_PATH, FOLDER_URL, $png8, $msTileSilhouette );
+		}
+		
+		
 		# if variations are needed for favicon.ico add them to $ico 
 		if ($ico && $ext == "png") {
 			

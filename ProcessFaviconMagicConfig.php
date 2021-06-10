@@ -98,308 +98,312 @@ class ProcessFaviconMagicConfig extends ModuleConfig {
 		$this->config->styles->add($this->config->urls->siteModules . ProcessFaviconMagic::MODULE_DIR . '/' . ProcessFaviconMagic::MODULE_NAME . '.css');
 		$this->config->scripts->add($this->config->urls->siteModules . ProcessFaviconMagic::MODULE_DIR . '/' . ProcessFaviconMagic::MODULE_NAME . '.js' );
 		$this->config->scripts->add($this->config->urls->siteModules . ProcessFaviconMagic::MODULE_DIR . '/Engine/' . ProcessFaviconMagic::MODULE_NAME . 'Config.js' );
+		
+        $this->addHookBefore('Inputfield::render', function(HookEvent $event) {
 
+            $inputfield = $event->object;
+			include('maxCharArray.php'); // set up all the max and recommended characters in one place. Much easier updating + less hassle and repetition
+		    if ($inputfield->name && $inputfield->name !== 'mobilePreviewZoom') $inputfield->id = $inputfield->name;
+			
+			if ( array_key_exists ( $inputfield->name, $maxCharInputs) ) {
+				
+				    $setMax = ( isset( $maxCharInputs[$inputfield->name]['maxChar']     )) ? $maxCharInputs[$inputfield->name]['maxChar']     :false;
+					$setRec = ( isset( $maxCharInputs[$inputfield->name]['recommended'] )) ? $maxCharInputs[$inputfield->name]['recommended'] :false;
+					
+					if ($setMax) {	
+						$inputfield->maxlength   = $setMax;
+						$inputfield->id          = $inputfield->name;
+						$inputfield->collapsed   = Inputfield::collapsedNever;
+                        $inputfield->columnWidth = 50; 
+						$inputfield->addClass('InputfieldTextLength');
+					    $inputfield->setAttribute('data-showcount', 1);
+	
+						$inputfield->addClass('inline', 'wrapClass');
+						$placeholderTxt = $setMax .' character max. ';
+					}
+					if ($setRec) {
+						$inputfield->setAttribute('data-recommended', $setRec);
+                        $placeholderTxt .= $setRec. ' or less recommended';
+					}
+                    $inputfield->setAttribute('placeholder' , $placeholderTxt);	    
+			}
+			
+			if($inputfield->hasClass('colorpicker')) {
+				
+				$inputfield->id          = $inputfield->name;
+		        $inputfield->collapsed = Inputfield::collapsedNever;        
+		        $inputfield->placeholder = '#rrggbb or #rgb';
+                $inputfield->maxlength   = 7;
+                $inputfield->minlength   = 7;
+
+			}
+				 
+        });
+		
         $inputfields = parent::getInputfields(); 
         $wrapper = new InputfieldWrapper();
 
-        $wrapper->label     = 'What is FaviconMagic and how do I use it?';
-        $wrapper->collapsed = Inputfield::collapsedYes;
-        $wrapper->icon      = 'info-circle';
+        $wrapper->label       = 'What is FaviconMagic and how do I use it?';
+        $wrapper->collapsed   = Inputfield::collapsedYes;
+        $wrapper->icon        = 'info-circle';
 
         // field show info what
-	    $field              = $this->modules->get('InputfieldMarkup');
-	    $field->label       = 'What is FaviconMagic?';
-	    $field->icon        = 'info';
-	    $field->value       = self::MODULE_INFO;
-        $field->collapsed   = Inputfield::collapsedNever;
-        $field->columnWidth = 50;
+	    $field                = $this->modules->get('InputfieldMarkup');
+	    $field->label         = 'What is FaviconMagic?';
+	    $field->icon          = 'info';
+	    $field->value         = self::MODULE_INFO;
+        $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 50;
 
         $wrapper->add($field);
 
 	    // field show info what
-	    $field              = $this->modules->get('InputfieldMarkup');
-	    $field->label       = 'How do I use it?';
-	    $field->icon        = 'info';
-        $field->value       = self::DIRECTIONS;
-        $field->collapsed   = Inputfield::collapsedNever;
-	    $field->columnWidth = 50;
+	    $field                = $this->modules->get('InputfieldMarkup');
+	    $field->label         = 'How do I use it?';
+	    $field->icon          = 'info';
+        $field->value         = self::DIRECTIONS;
+        $field->collapsed     = Inputfield::collapsedNever;
+	    $field->columnWidth   = 50;
 
         $wrapper->add($field);
         $inputfields->add($wrapper);
 		
-		$field              = $this->modules->get('InputfieldCheckbox');
-	    $field->name        = 'showAdvanced';
-	    $field->label       = 'Show Advanced Options for users';
-        $field->attr('class', 'autoSaveOnChange');
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
+		// MAIN INFO
+        $wrapper              = new InputfieldWrapper();
+		$wrapper->label       = 'Key information';
+		$wrapper->icon        = ProcessFaviconMagic::ICON;
+        $wrapper->collapsed   = Inputfield::collapsedNever;
+		$wrapper->class       = 'configPickers';
 		
-		$inputfields->add($field);
-		
-		$field              = $this->modules->get('InputfieldCheckbox');
-	    $field->name        = 'faviconFolder';
-	    $field->label       = 'Place icons in a folder away from site root';
-        $field->attr('class', 'autoSaveOnChange');
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-		
-		$inputfields->add($field);
-		
-		$field              = $this->modules->get('InputfieldCheckbox');
-	    $field->name        = 'faviconRoot';
-	    $field->label       = 'Place favicon.ico in site root';
-        $field->attr('class', 'autoSaveOnChange');
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-		
-		$inputfields->add($field);
-		
-        $field              = $this->modules->get('InputfieldCheckbox');
-	    $field->name        = 'showMoreInfo';
-	    $field->label       = 'Show More Info boxes where available';
-        $field->attr('class', 'autoSaveOnChange');
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-		
-		$inputfields->add($field);
-        
-		$field              = $this->modules->get('InputfieldCheckbox');
-	    $field->name        = 'relativePaths';
-	    $field->label       = 'Use relative paths for links';
-        $field->attr('class', 'autoSaveOnChange');
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-		
-		$inputfields->add($field);
-		
-		$field              = $this->modules->get('InputfieldCheckbox');
-	    $field->name        = 'compressPNGs';
-	    $field->label       = 'Use indexed png8 to compress png icons and .ico';
-        $field->attr('class', 'autoSaveOnChange');
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-		
-		$inputfields->add($field);		
-		
-        // General Settings Wrapper
-        $wrapper            = new InputfieldWrapper();
-        $wrapper->collapsed = Inputfield::collapsedNever;
-        $wrapper->class     = 'inline';
-
-	    // field Default Favicon Folder
-	    $field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'folderName';
-	    $field->label       = 'Favicon Folder';
-	    $field->icon        = 'folder';
-	    $field->description = $this->config->urls->files ;
-	    $field->placeholder = 'Destination folder for your favicons, webmanifest and browserconfig';
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 100;
-
-        $wrapper->add($field);
-		
-		$field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'symlink';
-	    $field->label       = 'Symlink for /files/';
-	    $field->icon        = 'link';
-	    $field->description   = str_replace('https://www.', '', rtrim($this->pages->get('/')->httpUrl , '/')) . '/';
-	    $field->placeholder = 'Symlink (if set) for ' . $this->config->urls->files . ' or set config.php with: $config->customFilesAlias = \'symlinkName\';';
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 100;
-
-        $wrapper->add($field);	
-	    $inputfields->add($wrapper);
-		
-		 // field Manifest Name
-        $wrapper            = new InputfieldWrapper();
-        $wrapper->collapsed = Inputfield::collapsedNever;
-        $wrapper->class     = 'inline'; 
-		
-	    $field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'manifestName';
-	    $field->label       = 'Manifest name';
-	    $field->icon        = 'cog';
-	    $field->placeholder = 'Specify name of your Manifest file';
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-
-        $wrapper->add($field);	
-		
-	    $field              = $this->modules->get('InputfieldSelect');
-	    $field->name        = 'manifestExtension';
-	    $field->label       = 'Manifest extension';
-	    $field->icon        = 'cog';
-		$field->options     = '.json
-.webmanifest';
-	    $field->placeholder = 'Choose the extension for your manifest';
-	    $field->collapsed   = Inputfield::collapsedNever;
-		$field->columnWidth = 50;
-		
-        $wrapper->add($field);	
-	    $inputfields->add($wrapper);
+		$field                = $this->modules->get('InputfieldText');       // Business Name
+	    $field->name          = 'businessName';
+	    $field->label         = 'Business Name';
+        $field->icon          = 'cog';
+		$field->showCount     = 1; // explicit showCount to get the ball rolling
+		$field->addClass('InputfieldIsPrimary', 'wrapClass');
 		
 		
-		// Business Names Wrapper
-        $wrapper            = new InputfieldWrapper();
-		$wrapper->label     = 'Names';
-		$wrapper->icon      = ProcessFaviconMagic::ICON;
-        $wrapper->collapsed = Inputfield::collapsedNever;
-		$wrapper->class     = 'configPickers';
+		$wrapper->add($field);
+		$wrapper->add( $this->addDBconfig($field->name, $field->label) );  
 		
-		// Business Name
-		$field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'businessName';
-	    $field->label       = 'Business Name';
-        $field->icon        = 'star';
-	    $field->collapsed   = Inputfield::collapsedNever;
-        $field->columnWidth = 50;
-        
-		$field->id          = $field->name;
+		$field                = $this->modules->get('InputfieldText');       // Business Description
+	    $field->name          = 'businessDesc';
+	    $field->label         = 'Business Description';
+	    $field->icon          = 'cogs';
+		$field->addClass('InputfieldIsPrimary', 'wrapClass');
+		
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
-        
-		// Business Description
-		$field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'businessDesc';
-	    $field->label       = 'Business Description';
-	    $field->icon        ='cogs';
-	    $field->collapsed   = Inputfield::collapsedNever;
-        $field->columnWidth = 50;
-
-		$field->id          = $field->name;
+   
+		$field                = $this->modules->get('InputfieldText');      // Android App Name
+	    $field->name          = 'androidAppName';
+	    $field->label         = 'Android Short Name';
+	    $field->icon          = 'android';
+		$field->addClass('InputfieldIsPrimary', 'wrapClass');
+		
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
+		
+        $field                = $this->modules->get('InputfieldText');	     // Default theme color
+        $field->name          = 'themeColor';
+        $field->label         = 'App Theme';
+        $field->icon          = 'android';
+        $field->class         = 'colorpicker';
+		$field->columnWidth   = 50;
+		$field->addClass('InputfieldIsPrimary', 'wrapClass');
 
-        // Android App Name
-		$field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'androidAppName';
-	    $field->label       = 'Android Short Name';
-	    $field->icon        = 'android';
-        $field->placeholder = '10 chars should fit on one line on most devices';
-		$field->maxlength   = 50;
-		$field->size        = 50;
-		$field->showCount   = 1;
-	    $field->collapsed   = Inputfield::collapsedNever;
-        $field->columnWidth = 50;
-
-		$field->id          = $field->name;
-		$wrapper->add($field);
-		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
-
-        // Apple App Name
-		$field              = $this->modules->get('InputfieldText');
-	    $field->name        = 'appleAppName';
-	    $field->label       = 'Apple App Name';
-	    $field->icon        = 'apple';
-        $field->placeholder = '10 chars should fit on one line on most devices';
-		$field->maxlength   = 50;
-		$field->size        = 50;
-		$field->showCount   = 1;
-	    $field->collapsed   = Inputfield::collapsedNever;
-        $field->columnWidth = 50;
-
-		$field->id          = $field->name;
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
 		
 	    $inputfields->add($wrapper);
-
-        // Colors Wrapper
-        $wrapper            = new InputfieldWrapper();
-        $wrapper->class     = 'configPickers pickers';
-		$wrapper->description  = 'Apple Touch Background and MS Tile Color will automatically be generated from the App Theme color if not otherwise specified';
-		$wrapper->label     = 'Colors';
-        $wrapper->collapsed = Inputfield::collapsedNever;
-        $wrapper->icon      = 'paint-brush';
-
-        // Default theme color
-        $field              = wire('modules')->get('InputfieldText');
-        $field->name        = 'themeColor';
-        $field->label       = 'App Theme';
-        $field->icon        = 'android';
-        $field->placeholder = '#rrggbb or #rgb';
-        $field->maxlength   = 7;
-        $field->minlength   = 7;
-        $field->columnWidth = 50;
-        $field->class       = 'colorpicker';
-        $field->collapsed = Inputfield::collapsedNever;
 		
-		$field->id          = $field->name;
+        // OPTIONAL NAMES AND COLORS
+        $wrapper              = new InputfieldWrapper();
+        $wrapper->class       = 'configPickers pickers';
+		$wrapper->description = 'Apple App Name, Touch Background and MS Tile Color will automatically be generated from previous values if not otherwise specified';
+		$wrapper->label       = 'Optional names and colors';
+        $wrapper->collapsed   = Inputfield::collapsedYes;
+        $wrapper->icon        = 'paint-brush';
+
+		$field                = $this->modules->get('InputfieldText');      // Apple App Name
+	    $field->name          = 'appleAppName';
+	    $field->label         = 'Apple App Name';
+	    $field->icon          = 'apple';
+		$field->addClass('optional', 'wrapClass');
+
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
-
-        // apple touch color
-	    $field              = wire('modules')->get('InputfieldText');
-	    $field->name        = 'appleTouchColor';
-	    $field->label       = 'OPTIONAL - Set Apple Touch Background';
-        $field->description = self::APPLETOUCH;
-	    $field->icon        = 'apple';
-        $field->placeholder = '#rrggbb or #rgb';
-	    $field->maxlength   = 7;
-	    $field->minlength   = 7;
-	    $field->columnWidth = 50;
-        $field->class       = 'colorpicker';
-	    $field->collapsed = Inputfield::collapsedNever;
-
-		$field->id          = $field->name;
+ 
+	    $field                = $this->modules->get('InputfieldText');      // apple touch color
+	    $field->name          = 'appleTouchColor';
+	    $field->label         = 'Apple Touch Background';
+	    $field->icon          = 'apple';        
+        $field->description   = self::APPLETOUCH;
+	    $field->columnWidth   = 50;
+		$field->addClass('colorpicker');			
+		$field->addClass('optional', 'wrapClass');
+		
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
 		
-		// Safari Pinned Tab - mac Touch Bar / Focus Color 
-	    $field              = wire('modules')->get('InputfieldText');
-	    $field->name        = 'safariPinnedTab';
-	    $field->label       = 'OPTIONAL - Set Safari Pinned Tab Color';
-        $field->description = self::SAFARIPINTAB;
-	    $field->icon        = 'apple';
-        $field->placeholder = '#rrggbb or #rgb';
-	    $field->maxlength   = 7;
-	    $field->minlength   = 7;
-	    $field->columnWidth = 50;
-        $field->class       = 'colorpicker';
-	    $field->collapsed = Inputfield::collapsedNever;
+	    $field                = $this->modules->get('InputfieldText');      // Safari Pinned Tab - mac Touch Bar / Focus Color 
+	    $field->name          = 'safariPinnedTab';
+	    $field->label         = 'Safari Pinned Tab Color';
+	    $field->icon          = 'apple';	
+        $field->description   = self::SAFARIPINTAB;
+        $field->columnWidth   = 50;
+		$field->addClass('colorpicker');			
+		$field->addClass('optional', 'wrapClass');
 
-		$field->id          = $field->name;
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
 		
-		// ms tile color
-	    $field              = wire('modules')->get('InputfieldText');
-	    $field->name        = 'msTileColor';
-	    $field->label       = 'OPTIONAL - Set MS Tile color';
-        $field->description = self::MSTILES;
-	    $field->icon        = 'windows';
-        $field->placeholder = '#rrggbb or #rgb';
-	    $field->maxlength   = 7;
-	    $field->minlength   = 7;
-	    $field->columnWidth = 50;
-        $field->class       = 'colorpicker';
-	    $field->collapsed = Inputfield::collapsedNever;
-
-		$field->id          = $field->name;
+	    $field                = $this->modules->get('InputfieldText');     // ms tile color
+	    $field->name          = 'msTileColor';
+	    $field->label         = 'MS Tile color';
+	    $field->icon          = 'windows';      
+        $field->description   = self::MSTILES;
+        $field->columnWidth   = 50;
+		$field->addClass('colorpicker');			
+		$field->addClass('optional', 'wrapClass');
+		
 		$wrapper->add($field);
 		$wrapper->add( $this->addDBconfig($field->name, $field->label) );
 	
 	    $inputfields->add($wrapper);
 		
-        $wrapper            = new InputfieldWrapper();
-        $wrapper->collapsed = Inputfield::collapsedNever;
-        $wrapper->class     = 'inline';
+		// ADVANCED SETTINGS
+        $wrapper              = new InputfieldWrapper();
+        $wrapper->collapsed   = Inputfield::collapsedYes;
+	    $wrapper->label       = 'Advanced Settings';
+	    $wrapper->icon        = 'cogs';
+
+	    $field                = $this->modules->get('InputfieldText');       // Default Favicon Folder
+	    $field->name          = 'folderName';
+	    $field->label         = 'Favicon Folder';
+	    $field->icon          = 'folder';
+	    $field->description   = $this->config->urls->files ;
+	    $field->placeholder   = 'Destination folder for your favicons, webmanifest and browserconfig';
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 50;
+        $field->addClass('inline', 'wrapClass');
+       
+	    $wrapper->add($field);
 		
-		$field              = $this->modules->get('InputfieldInteger');
-		$field->id          = 'defaultZoomValue';
-	    $field->name        = 'mobilePreviewZoom';
-	    $field->label       = 'Default zoom';
-	    $field->description = 'Set default zoom percentage for Mobile preview';
-	    $field->placeholder = 'Value between 50 and 100';
-	    $field->icon        = 'search';
-		$field->size        = 3;
+		$field                = $this->modules->get('InputfieldText');       // Define Symlink, if one exists
+	    $field->name          = 'symlink';
+	    $field->label         = 'Symlink for /files/';
+	    $field->icon          = 'link';
+	    $field->description   = str_replace('https://www.', '', rtrim($this->pages->get('/')->httpUrl , '/')) . '/';
+	    $field->placeholder   = 'Symlink (if set) for ' . $this->config->urls->files . ' or set config.php with: $config->customFilesAlias = \'symlinkName\';';
+	    $field->collapsed     = Inputfield::collapsedNever;
+        $field->columnWidth   = 50;
+		$field->addClass('inline', 'wrapClass');
+
+        $wrapper->add($field);	
+	    //$inputfields->add($wrapper);
+		 
+        $field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'showAdvanced';
+	    $field->label         = 'Show Advanced Options for users';
+        $field->attr('class', 'autoSaveOnChange');
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+		
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'faviconFolder';
+	    $field->label         = 'Place icons in a folder away from site root';
+        $field->attr('class', 'autoSaveOnChange');
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+		
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'faviconRoot';
+	    $field->label         = 'Place favicon.ico in site root';
+        $field->attr('class', 'autoSaveOnChange');
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+		
+        $field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'showMoreInfo';
+	    $field->label         = 'Show More Info boxes where available';
+        $field->attr('class', 'autoSaveOnChange');
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+        
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'relativePaths';
+	    $field->label         = 'Use relative paths for links';
+        $field->attr('class', 'autoSaveOnChange');
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+		
+		$field                = $this->modules->get('InputfieldCheckbox');
+	    $field->name          = 'compressPNGs';
+	    $field->label         = 'Use indexed png8 to compress png icons and .ico';
+        $field->attr('class', 'autoSaveOnChange');
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		
+		$wrapper->add($field);
+		
+		$wrap                 = new InputfieldWrapper();                    // Manifest wrapper
+        $wrap->collapsed      = Inputfield::collapsedNever;
+        $wrap->class          = 'hideInternalBorders'; 
+        $wrap->columnWidth    = 50;	
+		
+	    $field                = $this->modules->get('InputfieldText');      // Manifest Name
+	    $field->name          = 'manifestName';
+	    $field->label         = 'Manifest name';
+	    $field->icon          = 'cog';
+	    $field->placeholder   = 'Specify name of your Manifest file';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 70;
+		$field->addClass('inline', 'wrapClass');
+
+        $wrap->add($field);	
+		
+	    $field                = $this->modules->get('InputfieldSelect');    // Manifest Extension
+	    $field->name          = 'manifestExtension';
+	    $field->label         = 'Manifest extension';
+	    $field->icon          = 'cog';
+		$field->options       = '.json
+.webmanifest';
+	    $field->placeholder   = 'Choose the extension for your manifest';
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 30;
+		$field->addClass('inline', 'wrapClass');
+		
+        $wrap->add($field);
+		$wrapper->add($wrap);	
+		
+		$field                = $this->modules->get('InputfieldInteger');    // Default Zoom value for mobile preview
+		$field->id            = 'defaultZoomValue';
+	    $field->name          = 'mobilePreviewZoom';
+	    $field->label         = 'Default zoom';
+	    $field->description   = 'Set default zoom percentage for Mobile preview';
+	    $field->placeholder   = 'Value between 50 and 100';
+	    $field->icon          = 'search';
+		$field->size          = 3;
 		$field->attr("min", "50");
 		$field->attr("max", "100");
-	    $field->collapsed   = Inputfield::collapsedNever;
+	    $field->collapsed     = Inputfield::collapsedNever;
+		$field->columnWidth   = 50;
+		$field->addClass('inline', 'wrapClass');
 		
-		$wrapper->add($field);	
-		$inputfields->add($wrapper);
-	
+		$wrapper->add($field);
+		$inputfields->add($wrapper);	
+
         return $inputfields;
 
     }

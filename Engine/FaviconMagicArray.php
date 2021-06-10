@@ -1,5 +1,4 @@
 <?php  
-
 # array of different favicon names, sizes and settings
 $faviconsArray = array(
 					   
@@ -140,7 +139,7 @@ $faviconsArray = array(
                 'canvasWidth'  => '128',
 				'canvasHeight' => '',
 				'realWidth'    => '58',
-				'realHeight'   => ''
+				'realHeight'   => '58'
             ),
 			
 			array(
@@ -154,7 +153,7 @@ $faviconsArray = array(
                 'canvasWidth'  => '270',
 				'canvasHeight' => '',
 				'realWidth'    => '108',
-				'realHeight'   => ''
+				'realHeight'   => '108'
             ),
 			
 			array(
@@ -168,7 +167,7 @@ $faviconsArray = array(
                 'canvasWidth'  => '558',
 				'canvasHeight' => '',
 				'realWidth'    => '234',
-				'realHeight'   => ''
+				'realHeight'   => '234'
             ),
 			
 			array(

@@ -22,42 +22,67 @@ function docReady(fn) {
 }    
 function hideEmptyWrapper() {
 	
-    var wrappers = getAll('.InputfieldStateShowIf.InputfieldCheckbox, .InputfieldStateShowIf.inline, .InputfieldStateShowIf.pickers, .InputfieldStateShowIf.colorpicker');
+    var wrappers = getAll('.InputfieldStateShowIf.InputfieldCheckbox, .InputfieldStateShowIf.inline, .InputfieldStateShowIf.InputfieldMarkup, .InputfieldStateShowIf.pickers, .InputfieldStateShowIf.colorpicker');
 	
     wrappers.forEach(function (inputfield, index) {
-							 					 
+		
         if (inputfield.classList.contains('InputfieldStateHidden')) {	
-		   inputfield.classList.add('hideWRAPPER')
-           inputfield.closest('.InputfieldWrapper').classList.add('hideWRAPPER');	   
-        } else {inputfield.closest('.InputfieldWrapper').classList.remove("hideWRAPPER");
-        Array.from(getAll('.showHide')).forEach(function(el) {el.classList.remove('showHide');});
+		
+		    inputfield.classList.add('hideWRAPPER')
+		    if (!inputfield.classList.contains('InputfieldMarkup')) inputfield.closest('.InputfieldWrapper').classList.add('hideWRAPPER');
+	   
+        } else {
+			
+		    inputfield.classList.remove('hideWRAPPER')
+			
+			if (!inputfield.classList.contains('InputfieldMarkup')) inputfield.closest('.InputfieldWrapper').classList.remove("hideWRAPPER");
+
+            Array.from(getAll('.showHide')).forEach(function(el) {el.classList.remove('showHide');});
 		};
      });	
 
 }
-function characterWarning(targetInput,minChar,maxChar ) {
+function characterWarning(targetInput,minChar,maxChar,recommendedChar ) {
 		
-    var targetInputChar  = targetInput.value.length;
+    var targetInputChar = targetInput.value.length;
 	targetInput.classList.add('charCount');	
-    
+   	
 	if (targetInputChar > minChar) {
 			
-        if (targetInputChar <= maxChar) {
-            targetInput.classList.add('valid');			
-            targetInput.classList.remove('warning');
+        if (targetInputChar <= maxChar && targetInputChar <= recommendedChar) {
+            targetInput.classList.add('charValid');			
+            targetInput.classList.remove('charWarning');
         } else {
-            targetInput.classList.add('warning');			
-            targetInput.classList.remove('valid');
+            targetInput.classList.add('charWarning');			
+            targetInput.classList.remove('charValid');
         }				
     } else {
-		targetInput.classList.remove('valid','warning');		
+		targetInput.classList.remove('charValid','charWarning');		
 	}
 }
+
+function getMaxInput(maxCharInput){
+
+          var maxCharSet      = maxCharInput.getAttribute('maxlength');
+          var recommendChar   = maxCharInput.getAttribute('data-recommended');
+
+          if(recommendChar !== null && recommendChar !== '') {
+              var suggested = recommendChar;
+          } else {
+              var suggested = maxCharSet;	
+          }
+			
+          characterWarning(maxCharInput,1,maxCharSet,suggested );	
+    	
+};
+
+
 function getInitialHeight() {
 
-	heightsArray =[];
-	
 	var targetContainer = get('#faviconStatus .InputfieldContent'); // get targetContent container
+	if (targetContainer == null) return;
+	
+	heightsArray =[];
 	targetContainer.style.display = 'block'; // allow accurate targetContent height, without flex stretch of container
 	var paddingBottom   = parseInt(window.getComputedStyle(targetContainer).getPropertyValue('padding-bottom'), 10); // get relevant container padding
     
@@ -79,7 +104,9 @@ function getInitialHeight() {
 
 function zoomResize() {
 	
-    var zoomController = getById('previewZoom');
+    var zoomController = getById('mobilePreviewZoom');
+	if (zoomController == null) return;
+	
     var zoomValue      = zoomController.value; 
 	
     Array.from(getAll('.zoomable')).forEach(function(el,index){ 
@@ -147,6 +174,8 @@ docReady(function() {
 	getInitialHeight();
 	zoomResize();
 	hideEmptyWrapper();
+	
+	
 });
 
 window.addEventListener('load', function() {
@@ -155,15 +184,15 @@ window.addEventListener('load', function() {
         color.forEach(function (color, index) {
             if (color.type == "text" && color.value) {
                 color.type = "color";
-				color.setAttribute('title', '#rrggbb or #rgb - Right-click to copy, paste or remove hex code');
+				color.setAttribute('placeholder', 'Right-click to copy, paste or remove hex code');
             } 
         });
 		
 		var characterMaxInputs = document.querySelectorAll('.InputfieldTextLength');
-        characterMaxInputs.forEach(function (maxCharInput, index) {
-            var maxCharSet = maxCharInput.getAttribute('maxlength');
-            characterWarning(maxCharInput,1,maxCharSet );
-			
+		characterMaxInputs.forEach(function (maxCharInput, index) {
+		 
+		    getMaxInput(maxCharInput);
+        	
         });
 		
 	
@@ -178,11 +207,14 @@ window.addEventListener('load', function() {
         if (event.target.classList.contains('colorpicker')){
             if (event.target.type == "text" && event.target.value && event.target.value.length == 7) {
                 event.target.type = "color";
+				event.target.setAttribute('placeholder', 'Right-click to copy, paste or remove hex code');
             } else if (event.target.type == "text" && event.target.value.length == 4){
-            var hex = event.target.value;
-						hex = "#" + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2) + hex.charAt(3) + hex.charAt(3);
-						event.target.value = hex;
-						}
+                var hex = event.target.value;
+					hex = "#" + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2) + hex.charAt(3) + hex.charAt(3);
+					event.target.value = hex;
+			} else if (event.target.type == "text" && event.target.value.length == 0){
+				event.target.setAttribute('placeholder', '#rrggbb or #rgb');
+			}
          }
     };
 	
@@ -244,21 +276,34 @@ window.addEventListener('load', function() {
 			rangeProgress(input);
         }
 		
-		if (input.id == 'previewZoom') { 
+		if (input.classList.contains('InputfieldTextLength')){
+			getMaxInput(input);
+        }
+
+		if (input.id == 'mobilePreviewZoom') { 
 			getInitialHeight();
 			zoomResize();
 		}
 		
         if (input.classList.contains('autoSaveOnChange')){
 			
-            if (input.classList.contains('autoGenerateNew')){
-                var generateCheckbox = getById('Inputfield_generateNewFavicons');
-                var showAdvanced     = getById('Inputfield_showAdvanced');
-                var addedButton      = getById('deleteSelectedFolders');
-                generateCheckbox.checked = true;
-				showAdvanced.checked = false;
-            };
+             var showAdvanced = getById('showAdvanced');
+             var addedButton  = getById('deleteSelectedFolders');			
+			 var generateCheckbox = getById('generateNewFavicons');
+			 
+			if( input.id == 'generateNewFavicons') {
+			console.log('Got it');	
+			    showAdvanced.checked = false;
+				
+			}
 			
+            if (input.classList.contains('autoGenerateNew')){
+               
+			    generateCheckbox.checked = true;
+				showAdvanced.checked = false;
+              
+            };
+
             input.closest('.InputfieldContent').classList.add('saveLoading');
 		    
 			var saveSubmit   = getById('submit_save_copy') || getById('submit_save') || getById('Inputfield_submit_save_module');

@@ -3,10 +3,9 @@
 
 <h2>SVG silhouette for Apple devices and MS Tiles</h2>
 <h3><strong>tldr</strong>: remember to <strong>set your viewbox for 0 0 16 16</strong></h3>
-<p>When creating a silhouette/mask svg version for Safari Pinned Tabs and  Windows Tiles, we recommend setting your viewbox for 0 0 16 16, as this is what Apple requires.
+<p>When creating a silhouette/mask svg version for Safari Pinned Tabs and  Windows Tiles, please <strong>set your viewbox for 0 0 16 16</strong>. This is what Apple requires.
 In addition, the svg should touch the edge/s of the viewbox, to avoid unusual results generating MS tiles.</p>
-<p>The easiest way to do this in something like illustrator is often a sacrificial rectangle with no fill and no stroke at 16 x 16.</p>
-<p>This forces the desired viewbox and can then be discarded easily using something as simple as notepad.</p>
-<p>Easy is good - especially when you get the result you want without a lot of hassle.</p>
-<p>Choose whatever color you like for your silhouette source file  - I use orange to make it stand out on both white and black backgrounds. FaviconMagic will automatically change the svg fill color to suit both MS tiles (white) and Safari Pinned Tab Mask (black).</p>
+<p>The easiest way to do this in something like illustrator is often a sacrificial rectangle with no fill and no stroke at 16 x 16. This forces the desired viewbox and can then be discarded easily using something as simple as notepad.</p>
+<p>Easy is good, especially when you get the result you want without a lot of hassle.</p>
+<p>Choose whatever color you like for your silhouette source file &#8212; such as orange &#8212; to make it stand out on both white and black backgrounds. FaviconMagic will automatically change the svg fill color to suit both MS tiles (white) and Safari Pinned Tab Mask (black).</p>
 </details>

@@ -64,6 +64,7 @@ $faviconExists     = $page->fmFavicon->count();
 $silhouetteExists  = $page->fmFaviconSilhouette->count();
 if ($faviconExists) {
     $favicon       = $page->fmFavicon->first->filename();
+	$faviconSrcExt = $page->fmFavicon->first->ext;
    }
 if ($silhouetteExists) {
     $silhouetteSVG = $page->fmFaviconSilhouette->first->filename();
@@ -80,7 +81,7 @@ $safariPinTab  = ( $this->modules->getConfig('ProcessFaviconMagic', 'safariPinne
 $msTileColor   = ( $this->modules->getConfig('ProcessFaviconMagic', 'msTileColor')     ) ? $this->modules->getConfig('ProcessFaviconMagic', 'msTileColor')         : $themeColor ;
 # Settings
 $generateNew   = $this->modules->get('ProcessFaviconMagic')->generateNewFavicons; // forces users to actively click Generate New Favicons prior to save
-$imagick       = (extension_loaded('imagick') || class_exists("Imagick"));
+
 # include array of favicons
 if ($faviconExists): include('FaviconMagicArray.php'); endif;
 # include generator engine to render favicons if $generateNew
@@ -88,7 +89,7 @@ if ($faviconExists && $generateNew) : include('FaviconMagicFaviconGenerator.php'
 
 $folderExists  = is_dir( FOLDER_PATH ); // define after possible new generation
 
-$imagickStatus = ($imagick )
+$imagickStatus = (IMAGICK_ON)
                  ? '<p class="success">imagick enabled</p>'
                  : '<p class="warning">imagick is not enabled on this server. Please enable imagick for best results</p>';
 
@@ -321,11 +322,17 @@ foreach ( $faviconsArray as $faviconLinks => $fields ) {
 
 $themeContrastColor = themeContrastSwitch($themeColor);
 $mobileInfoFilter   = ($themeContrastColor == '#000000') ? ' style="filter:invert(1);opacity:.7;"' : '';
-$mobileAppIconLink  = file_exists(FOLDER_PATH  . 'favicon.svg') 
-                      ? ' <img src="' . FOLDER_URL  . 'favicon.svg?v='. mt_rand( 1000, 9999 ) . '">' :  
-					  file_exists(FOLDER_PATH  . 'favicon-192x192.png') 
-                      ? ' <img src="' . FOLDER_URL  . 'favicon-192x192.png?v='. mt_rand( 1000, 9999 ) . '">' :
-					  '';
+
+if     ( file_exists(FOLDER_PATH  . 'favicon.svg')         ) {$mobileAppIconLink = ' <img src="' . FOLDER_URL  . 'favicon.svg?v='        . mt_rand(1000,9999) . '">' ;} 
+elseif ( file_exists(FOLDER_PATH  . 'favicon-192x192.png') ) {$mobileAppIconLink = ' <img src="' . FOLDER_URL  . 'favicon-192x192.png?v='. mt_rand(1000,9999) . '">' ;}
+else                                                         {$mobileAppIconLink = '';}
+
+//$mobileAppIconLink  = file_exists(FOLDER_PATH  . 'favicon.svg') 
+//                      ? ' <img src="' . FOLDER_URL  . 'favicon.svg?v='. mt_rand( 1000, 9999 ) . '">' :  
+//					  file_exists(FOLDER_PATH  . 'favicon-192x192.png') 
+//                      ? ' <img src="' . FOLDER_URL  . 'favicon-192x192.png?v='. mt_rand( 1000, 9999 ) . '">' :
+//					  '';
+					  
 $mobileHomeAppIcon =  file_exists(FOLDER_PATH  . 'maskable-512x512.png') 
                       ? ' style="background-image: url(' . FOLDER_URL  . 'maskable-512x512.png?v='. mt_rand( 1000, 9999 ) . ');"' :
                       '';				  

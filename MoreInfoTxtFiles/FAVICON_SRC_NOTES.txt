@@ -1,8 +1,10 @@
 <details>
 <summary><span><strong>More Info</strong>: <strong>use SVG</strong> if you can</span> <em>SVG is highly recommended</em></summary>
 <h2>Use an SVG source to generate crisp and clear PNGs and SVG favicons</h2>
-<h3><strong>tldr</strong>: <strong>SVG is better and smaller</strong>, giving cripser results for generated favicons</strong></h3>
-<p>If at all possible, generate your favicons using an SVG. This will give you the best results and most future-proof favicon markup.</p>
+<h3><strong>tldr</strong>: <strong>SVG is better and smaller</strong>, giving crisper results for generated favicons</strong></h3>
+<p class="notes"><strong>Please note</strong>: using svg as your source is only possible if ImageMagick (imagick) is enabled.</p>
+<p>If possible, generate your favicons using an SVG.</p>
+<p>This option requires imagick, but gives you the best results, most future-proof favicon markup and allows more advanced functionality, such as the automatic generation of a maskable manifest icon, smart re-sizing options and generation of ms-tiles.</p>
 <p>When an SVG is available as a source file, FaviconMagic will generate markup to use that SVG for all browsers that can use them. This is all modern browsers.</p>
 <p>In addition, all PNGs generated will resize and compress using that SVG source, resulting in efficiently re-sized, sharp and small images at every size.</p>
 </details>

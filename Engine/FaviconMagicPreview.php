@@ -41,14 +41,12 @@ function themeContrastSwitch($hexcolor){
     return ($yiq >= 155) ? $light_bckgnd : $dark_bckgnd;
 }
 
-
-
 # names of additional files that will be generated automatically
 $fileNamesArray = array(
-						
+				
                   'ico'           => 'favicon.ico',
-				  'manifest'      => $manifestFile,
-				  'browserConfig' => 'browserconfig.xml',
+                  'manifest'      => $manifestFile,
+                  'browserConfig' => 'browserconfig.xml',
 
 );
 

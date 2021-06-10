@@ -231,12 +231,13 @@ if ( !$faviconRoot) {
 	}
 
 $totalDocumentHead = ($folderExists) 
-                      ? '<p class="downloadSize"><span>Favicons in <strong>' . $icoLocation . '</a></strong></span> ' . formatFileSize($subtotal) .'</p>'
+                      ? '<p class="downloadSize"><span>Favicons in <strong>' . $icoLocation . '</a></strong></span> ' 
+                         . formatFileSize($subtotal) .'</p>'
                       : '<p class="informational">Favicons not yet generated</p>';
 $grandtotal += $subtotal;
 
 $icoLocation = $manifestFile;
-$outputManifest =  '<h2>Favicons declared only in <strong><a href="' . $manifestURL . '" target="_blank">' . $icoLocation . '</a></strong></h2>';
+$outputManifest = '<h2>Favicons declared only in <strong><a href="'.$manifestURL.'" target="_blank">'.$icoLocation.'</a></strong></h2>';
 $subtotal = 0;
 foreach ( $faviconsArray as $faviconLinks => $fields ) {
 
@@ -278,13 +279,15 @@ foreach ( $faviconsArray as $faviconLinks => $fields ) {
 }
 
 $totalManifest = ($folderExists)
-                               ? '<p class="downloadSize"><span>Favicons in <strong><a href="' . $manifestURL . '" target="_blank">' . $icoLocation . '</a></strong></span> '. formatFileSize($subtotal) .'</p>'
-							   : '<p class="informational">Favicons not yet generated';
+                  ? '<p class="downloadSize"><span>Favicons in <strong><a href="'.$manifestURL.'" target="_blank">' 
+                     . $icoLocation . '</a></strong></span> '
+                     . formatFileSize($subtotal) .'</p>'
+                  : '<p class="informational">Favicons not yet generated';
 
 $grandtotal += $subtotal;
 
 $icoLocation = 'browserconfig.xml';
-$outputBrowserconfig = '<h2>Favicons declared only in <strong><a href="' . $browserConfigURL . '" target="_blank">' . $icoLocation .  '</a></strong></h2>
+$outputBrowserconfig = '<h2>Favicons declared only in <strong><a href="'. $browserConfigURL . '" target="_blank">' . $icoLocation .  '</a></strong></h2>
 <p><strong>Please note:</strong> MS Tile icons are transparent, but displayed here using the background tile color chosen for efficient review.</p>';
 
 $subtotal = 0;
@@ -308,17 +311,17 @@ foreach ( $faviconsArray as $faviconLinks => $fields ) {
 		    clearstatcache(true, $filename );
             $outputBrowserconfig .= '
 	        <span class="iconPreview">
-		    <a href="' . $faviconLink . '" title="open full size: ' . $faviconName  . '.' .  $ext . '" target="_blank">
-		    <img width="' . $width . '" height="' . $height . '" src="'  . $faviconLink . '?v='. mt_rand( 1000, 9999 ) . '" style="background: '. $msTileColor .'"></a> 
+		    <a href="'.$faviconLink.'" title="open full size: '.$faviconName.'.'.$ext.'" target="_blank">
+		    <img width="'.$width.'" height="'.$height.'" src="'.$faviconLink.'?v='.mt_rand( 1000, 9999 ).'" style="background: '.$msTileColor.'"></a> 
 		
-		    <a href="' . $faviconLink . '" title="open full size: ' . $faviconName  . '.' .  $ext . '" target="_blank">
-		    <strong>' . $faviconName  . '.' .  $ext . '</strong>' . $filesize . '</a>
+		    <a href="'.$faviconLink.'" title="open full size: '.$faviconName.'.'.$ext.'" target="_blank">
+		    <strong>' .$faviconName.'.'.$ext.'</strong> '.$filesize.'</a>
 		    </span>';
     
 	    } else {
 	        $outputBrowserconfig .= '
 	        <span class="iconPreview">
-		    <strong>' . $faviconName  . '.' .  $ext . '</strong>' . $filesize . '
+		    <strong>'.$faviconName.'.'.$ext.'</strong> '.$filesize.'
 	        </span>';
         }
        
@@ -330,13 +333,13 @@ foreach ( $faviconsArray as $faviconLinks => $fields ) {
 $themeContrastColor = themeContrastSwitch($themeColor);
 $mobileInfoFilter   = ($themeContrastColor == '#000000') ? ' style="filter:invert(1);opacity:.7;"' : '';
 
-if     ( file_exists(FOLDER_PATH  . 'favicon.svg')         ) {$mobileAppIconLink = ' <img src="' . FOLDER_URL  . 'favicon.svg?v='        . mt_rand(1000,9999) . '">' ;} 
-elseif ( file_exists(FOLDER_PATH  . 'favicon-192x192.png') ) {$mobileAppIconLink = ' <img src="' . FOLDER_URL  . 'favicon-192x192.png?v='. mt_rand(1000,9999) . '">' ;}
-else                                                         {$mobileAppIconLink = '';}
+if     (file_exists(FOLDER_PATH  . 'favicon.svg')        ) {$mobileAppIconLink =' <img src="'.FOLDER_URL.'favicon.svg?v='        . mt_rand(1000,9999) . '">' ;} 
+elseif (file_exists(FOLDER_PATH  . 'favicon-192x192.png')) {$mobileAppIconLink =' <img src="'.FOLDER_URL.'favicon-192x192.png?v='. mt_rand(1000,9999) . '">' ;}
+else                                                       {$mobileAppIconLink ='';}
 				  
-$mobileHomeAppIcon =  file_exists(FOLDER_PATH  . 'maskable-512x512.png') 
-                      ? ' style="background-image: url(' . FOLDER_URL  . 'maskable-512x512.png?v='. mt_rand( 1000, 9999 ) . ');"' :
-                      '';				  
+$mobileHomeAppIcon = file_exists(FOLDER_PATH.'maskable-512x512.png') 
+                                 ? ' style="background-image: url(' . FOLDER_URL  . 'maskable-512x512.png?v='. mt_rand( 1000, 9999 ) . ');"' 
+								 : '';				  
 					 
 $mobileAppTxt       = ($themeContrastColor == '#000000') ? ' style="color:#000000; opacity:.85;"' : '';
 $totalBrowserconfig = ($folderExists)

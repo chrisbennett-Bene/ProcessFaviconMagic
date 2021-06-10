@@ -76,9 +76,15 @@ $appleName     = $this->modules->getConfig('ProcessFaviconMagic', 'appleAppName'
 $androidName   = $this->modules->getConfig('ProcessFaviconMagic', 'androidAppName');
 $shortName     = $appleName ? $appleName : $androidName ;
 $themeColor    = $this->modules->getConfig('ProcessFaviconMagic', 'themeColor');
-$touchIconBG   = ( $this->modules->getConfig('ProcessFaviconMagic', 'appleTouchColor') ) ? $this->modules->getConfig('ProcessFaviconMagic', 'appleTouchColor')     : $themeColor ;
-$safariPinTab  = ( $this->modules->getConfig('ProcessFaviconMagic', 'safariPinnedTab')     ) ? $this->modules->getConfig('ProcessFaviconMagic', 'safariPinnedTab') : $themeColor ;
-$msTileColor   = ( $this->modules->getConfig('ProcessFaviconMagic', 'msTileColor')     ) ? $this->modules->getConfig('ProcessFaviconMagic', 'msTileColor')         : $themeColor ;
+$touchIconBG   = ( $this->modules->getConfig('ProcessFaviconMagic','appleTouchColor') ) 
+                   ? $this->modules->getConfig('ProcessFaviconMagic', 'appleTouchColor')
+                   : $themeColor;
+$safariPinTab  = ( $this->modules->getConfig('ProcessFaviconMagic','safariPinnedTab') ) 
+                   ? $this->modules->getConfig('ProcessFaviconMagic', 'safariPinnedTab') 
+                   : $themeColor;
+$msTileColor   = ( $this->modules->getConfig('ProcessFaviconMagic','msTileColor') ) 
+                   ? $this->modules->getConfig('ProcessFaviconMagic', 'msTileColor')
+                   : $themeColor;
 # Settings
 $generateNew   = $this->modules->get('ProcessFaviconMagic')->generateNewFavicons; // forces users to actively click Generate New Favicons prior to save
 
@@ -90,24 +96,24 @@ if ($faviconExists && $generateNew) : include('FaviconMagicFaviconGenerator.php'
 $folderExists  = is_dir( FOLDER_PATH ); // define after possible new generation
 
 $imagickStatus = (IMAGICK_ON)
-                 ? '<p class="success">imagick enabled</p>'
-                 : '<p class="warning">imagick is not enabled on this server. Please enable imagick for best results</p>';
+                  ? '<p class="success">imagick enabled</p>'
+                  : '<p class="warning">imagick is not enabled on this server. Please enable imagick for best results</p>';
 
 $faviconStatus = ($generateNew) 
-                 ? '<p class="success">New favicons generated</p>' 
-                 : '<p class="informational">No favicons generated since last save. Displaying current favicons.</p>';
+                  ? '<p class="success">New favicons generated</p>' 
+                  : '<p class="informational">No favicons generated since last save. Displaying current favicons.</p>';
 
 $folderStatus  = ($folderExists) 
-                 ? '<p class="success">Valid directory: <span>' . FOLDER_URL . '</span></p>'
-                 : '<p class="informational">Destination Folder has not yet been created</p>';
+                  ? '<p class="success">Valid directory: <span>' . FOLDER_URL . '</span></p>'
+                  : '<p class="informational">Destination Folder has not yet been created</p>';
 $noFolder      = (!$faviconFolder) ? '<p class="informational">Favicons are located in site root</p>' : '';
 $pngStatus     = ($this->compressPNGs) 
-                 ? '<p class="success">PNG favicons &#x25ba <span>indexed PNG-8</span></p>'
-                 : '<p class="informational">PNG favicons not generated as PNG-8</p>';	
+                  ? '<p class="success">PNG favicons &#x25ba <span>indexed PNG-8</span></p>'
+                  : '<p class="informational">PNG favicons not generated as PNG-8</p>';	
 				 
 $filesStatus   = (SYMLINK_ACTIVE) 
-                 ? '<p class="success">Valid symlink: <span> ' . SYMLINK_FILES . '<b> &#x25ba </b>'  . $this->config->urls->files . '</span></p>'
-				 : '<p class="warning">Warning! <span>No valid symlink detected for '  . $this->config->urls->files . '</span></p>';
+                  ? '<p class="success">Valid symlink: <span> ' . SYMLINK_FILES . '<b> &#x25ba </b>'  . $this->config->urls->files . '</span></p>'
+                  : '<p class="warning">Warning! <span>No valid symlink detected for '  . $this->config->urls->files . '</span></p>';
 
 $outputFaviconMagicPreview = '<div class="faviconsPreview">';
 
@@ -160,8 +166,8 @@ if ($faviconRoot) {
 }
 
 $totalRoot = (file_exists($icoPath)) 
-                               ? '<p class="downloadSize"><span>Favicons in <strong>' . $icoLocation. '</a></strong></span> ' . formatFileSize($subtotal) .'</p>'
-							   : '<p class="informational">favicon.ico not yet generated</p>';
+              ? '<p class="downloadSize"><span>Favicons in <strong>' . $icoLocation. '</a></strong></span> ' . formatFileSize($subtotal) .'</p>'
+              : '<p class="informational">favicon.ico not yet generated</p>';
 $grandtotal += $subtotal;
 
 $icoLocation = 'document head';
@@ -225,8 +231,8 @@ if ( !$faviconRoot) {
 	}
 
 $totalDocumentHead = ($folderExists) 
-                               ? '<p class="downloadSize"><span>Favicons in <strong>' . $icoLocation . '</a></strong></span> ' . formatFileSize($subtotal) .'</p>'
-							   : '<p class="informational">Favicons not yet generated</p>';
+                      ? '<p class="downloadSize"><span>Favicons in <strong>' . $icoLocation . '</a></strong></span> ' . formatFileSize($subtotal) .'</p>'
+                      : '<p class="informational">Favicons not yet generated</p>';
 $grandtotal += $subtotal;
 
 $icoLocation = $manifestFile;
@@ -278,7 +284,8 @@ $totalManifest = ($folderExists)
 $grandtotal += $subtotal;
 
 $icoLocation = 'browserconfig.xml';
-$outputBrowserconfig = '<h2>Favicons declared only in <strong><a href="' . $browserConfigURL . '" target="_blank">' . $icoLocation .  '</a></strong></h2><p><strong>Please note:</strong> MS Tile icons are transparent, but displayed here using the background tile color chosen for efficient review.</p>';
+$outputBrowserconfig = '<h2>Favicons declared only in <strong><a href="' . $browserConfigURL . '" target="_blank">' . $icoLocation .  '</a></strong></h2>
+<p><strong>Please note:</strong> MS Tile icons are transparent, but displayed here using the background tile color chosen for efficient review.</p>';
 
 $subtotal = 0;
 foreach ( $faviconsArray as $faviconLinks => $fields ) {
@@ -427,7 +434,7 @@ $outputMobilePreview       .= (file_exists($manifestPath)) ?
                               '<li><a href="#mobileAppScreen" class="previewLink">App Start</a></li>
 							   <li><a href="#mobileWebScreen" class="previewLink">App</a></li>' : '';
 $outputMobilePreview       .= '</ul>
-							   </div>';                                                             // ENDS mobile zoomable container
+							   </div>';                                                                   // ENDS mobile zoomable container
 
 
 $outputFaviconMagicPreview .= $outputDocumentHead;	

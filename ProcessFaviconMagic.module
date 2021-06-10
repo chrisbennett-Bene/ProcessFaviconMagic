@@ -463,7 +463,7 @@ class ProcessFaviconMagic extends Process implements Module {
 		// FAVICON FOLDER NAME AND SYMLINK
 	    $wrapper              = new InputfieldWrapper();                  
         $wrapper->collapsed   = Inputfield::collapsedNever;
-        //$wrapper->class       = 'hideWrapperStyling';
+        $wrapper->class       = 'hideWrapperStyling';
         $wrapper->showIf      = 'faviconFolder=1, showAdvanced=1';
 		
 	    $field                = $this->modules->get('InputfieldText');          // Default Favicon Folder

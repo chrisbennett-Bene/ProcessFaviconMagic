@@ -43,10 +43,10 @@ function themeContrastSwitch($hexcolor){
 
 # names of additional files that will be generated automatically
 $fileNamesArray = array(
-				
-                  'ico'           => 'favicon.ico',
-                  'manifest'      => $manifestFile,
-                  'browserConfig' => 'browserconfig.xml',
+
+    'ico'           => 'favicon.ico',
+    'manifest'      => $manifestFile,
+    'browserConfig' => 'browserconfig.xml',
 
 );
 

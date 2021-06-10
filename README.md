@@ -10,6 +10,9 @@
 <li>No need to ever paste in markup again once you set up FaviconMagic</li>
 <li>Automatic generation of maskable icon and Lighthouse-friendly manifest, suitable for PWA</li>
 </ul>
+<hr>
+<p><strong>Please note</strong>: to take advantage of all FaviconMagic functions, imagick must be enabled. <br>It will work without it, but performance and functionality is more limited.</p>
+<hr>
 <p>FaviconMagic takes many of the best ideas and principles of realfavicongenerator (which has always rocked) and implements improvements on them in a seamless processwire environment.</p>
 <p>Generating favicon variations is based around manipulating your svg source and outputting once resized, with fallbacks for png.</p>
 <p>It's much more than a "clone" of realfavicongenerator: minor annoyances are eliminated, workflow is smoothed and smarter automatic options are implemented. The goal is to provide bang for buck: use the best favicons for modern browsers, while allowing crisp, low-bandwidth fallbacks for others.</p>

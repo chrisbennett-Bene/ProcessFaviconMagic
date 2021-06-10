@@ -333,25 +333,24 @@ $mobileInfoFilter   = ($themeContrastColor == '#000000') ? ' style="filter:inver
 if     ( file_exists(FOLDER_PATH  . 'favicon.svg')         ) {$mobileAppIconLink = ' <img src="' . FOLDER_URL  . 'favicon.svg?v='        . mt_rand(1000,9999) . '">' ;} 
 elseif ( file_exists(FOLDER_PATH  . 'favicon-192x192.png') ) {$mobileAppIconLink = ' <img src="' . FOLDER_URL  . 'favicon-192x192.png?v='. mt_rand(1000,9999) . '">' ;}
 else                                                         {$mobileAppIconLink = '';}
-
-//$mobileAppIconLink  = file_exists(FOLDER_PATH  . 'favicon.svg') 
-//                      ? ' <img src="' . FOLDER_URL  . 'favicon.svg?v='. mt_rand( 1000, 9999 ) . '">' :  
-//					  file_exists(FOLDER_PATH  . 'favicon-192x192.png') 
-//                      ? ' <img src="' . FOLDER_URL  . 'favicon-192x192.png?v='. mt_rand( 1000, 9999 ) . '">' :
-//					  '';
-					  
+				  
 $mobileHomeAppIcon =  file_exists(FOLDER_PATH  . 'maskable-512x512.png') 
                       ? ' style="background-image: url(' . FOLDER_URL  . 'maskable-512x512.png?v='. mt_rand( 1000, 9999 ) . ');"' :
                       '';				  
 					 
 $mobileAppTxt       = ($themeContrastColor == '#000000') ? ' style="color:#000000; opacity:.85;"' : '';
 $totalBrowserconfig = ($folderExists)
-                               ? '<p class="downloadSize"><span>Favicons in <strong><a href="' . $browserConfigURL . '" target="_blank">' . $icoLocation .  '</a></strong></span> ' . formatFileSize($subtotal) .'</strong></p>'
-							   : '<p class="informational">Favicons not yet generated';
+                       ? '<p class="downloadSize">
+                          <span>Favicons in <strong><a href="'.$browserConfigURL.'" target="_blank">'.$icoLocation.'</a></strong></span>
+						  ' . formatFileSize($subtotal) .'</p>'
+                       : '<p class="informational">Favicons not yet generated';
 $grandtotal += $subtotal;
 
-$totalAll = ($folderExists)
-                               ? '<hr><p class="downloadSize"><span>Total size of <strong>all</strong> generated favicons</span> '. formatFileSize($grandtotal) . '</p>' : '';
+$totalAll           = ($folderExists)
+                       ? '<hr><p class="downloadSize">
+                          <span>Total size of <strong>all</strong> generated favicons</span> '
+                          . formatFileSize($grandtotal) . '</p>' 
+                       : '';
 
 $outputResultsOverview      = '<div class="faviconInfo">';						   
 $outputResultsOverview     .= '<div class="iconStatus"><h2>Status</h2>';
@@ -363,9 +362,9 @@ if ($faviconFolder) {
 } else {                         $outputResultsOverview     .= $noFolder;}
 $outputResultsOverview     .= ($folderExists) ? $pngStatus : '';
 
-$icoSizeStatus = ($icobytes < 10000)
-                 ? '<p class="success">Success! <span>Raw size of favicon.ico ( <b>' . formatFileSize($icobytes) . '</b> ) is < 10 kB</span></p>'
-				 : '<p class="warning">Warning! <span>Raw size of favicon.ico ( <b>' . formatFileSize($icobytes) . '</b> ) is > 10 kB</span></p>';
+$icoSizeStatus      = ($icobytes < 10000)
+                       ? '<p class="success">Success! <span>Raw size of favicon.ico ( <b>'.formatFileSize($icobytes).'</b> ) is < 10 kB</span></p>'
+                       : '<p class="warning">Warning! <span>Raw size of favicon.ico ( <b>'.formatFileSize($icobytes).'</b> ) is > 10 kB</span></p>';
 
 $outputResultsOverview     .= ($folderExists) ? $icoSizeStatus : '';
 
